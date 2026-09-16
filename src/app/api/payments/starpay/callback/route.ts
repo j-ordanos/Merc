@@ -18,7 +18,11 @@ export async function POST(request: Request) {
       )
     )
       throw new AppError(401, 'SIGNATURE', 'Invalid callback signature.');
-    const providerId = payload?.data?.order_id ?? payload?.order_id;
+    const providerId =
+      payload?.data?.order_id ??
+      payload?.data?.billRefNo ??
+      payload?.order_id ??
+      payload?.billRefNo;
     if (typeof providerId !== 'string')
       throw new AppError(400, 'INVALID_CALLBACK', 'Missing order reference.');
     const db = adminDb();
