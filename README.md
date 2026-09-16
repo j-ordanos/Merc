@@ -30,6 +30,8 @@ The source challenge document and all `.env` files except `.env.example` are ign
 
 The seed uses curated Unsplash sample photographs as illustrative product imagery. Real merchandising should replace these with accurate, licensed product photographs and specifications. Storage upload errors stop the seed instead of silently saving broken URLs.
 
+If your network prevents Node from downloading the photos, cache them as `<product-slug>.jpg` in a directory and run `SEED_IMAGE_DIR=/path/to/images npm run db:seed`. The same script still uploads every image into Supabase Storage and saves its public URL.
+
 ## Environment
 
 | Variable                               | Purpose                                                                                         |

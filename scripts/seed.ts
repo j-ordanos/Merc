@@ -1,4 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
+import axios from 'axios';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { sampleProducts, categories } from '../src/features/catalog/data';
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -11,13 +14,27 @@ async function seed() {
     .upsert(categories.map(({ id, name }) => ({ id, name })));
   if (categoryError) throw categoryError;
   for (const product of sampleProducts) {
-    const response = await fetch(product.image_url, { signal: AbortSignal.timeout(30000) });
-    if (!response.ok)
-      throw new Error(`Image download failed for ${product.slug}: ${response.status}`);
+    let image: ArrayBuffer | Buffer;
+    try {
+      if (process.env.SEED_IMAGE_DIR) {
+        image = await readFile(join(process.env.SEED_IMAGE_DIR, `${product.slug}.jpg`));
+      } else {
+        const response = await axios.get<ArrayBuffer>(product.image_url, {
+          responseType: 'arraybuffer',
+          timeout: 30000,
+        });
+        image = response.data;
+      }
+    } catch (error) {
+      const reason = axios.isAxiosError(error) ? error.code || error.response?.status : 'unknown';
+      throw new Error(
+        `Image download failed for ${product.slug} (${reason}). Rerun the seed to retry.`,
+      );
+    }
     const imagePath = `${product.slug}.jpg`;
     const { error: imageError } = await db.storage
       .from('products')
-      .upload(imagePath, await response.arrayBuffer(), { contentType: 'image/jpeg', upsert: true });
+      .upload(imagePath, image, { contentType: 'image/jpeg', upsert: true });
     if (imageError) throw imageError;
     const { data } = db.storage.from('products').getPublicUrl(imagePath);
     const { error } = await db.from('products').upsert({ ...product, image_url: data.publicUrl });

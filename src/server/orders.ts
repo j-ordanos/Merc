@@ -1,5 +1,6 @@
 import 'server-only';
 import { createHash } from 'node:crypto';
+import axios from 'axios';
 import type { CheckoutInput } from '@/lib/validation';
 import type { Order, PaymentAttempt, Product } from '@/lib/types';
 import { adminDb, supabase } from './supabase';
@@ -106,7 +107,19 @@ export async function checkout(userId: string, input: CheckoutInput) {
       .eq('order_id', orderId);
     if (saveError) throw saveError;
     return { orderId, paymentUrl: payment.payment_url };
-  } catch {
+  } catch (error) {
+    // Log classification only: Axios errors contain credentials and customer data.
+    const providerCode = axios.isAxiosError(error) ? error.response?.data?.error?.code : undefined;
+    console.error('Merc payment initialization failed', {
+      orderId,
+      type: error instanceof Error ? error.name : 'UnknownError',
+      ...(axios.isAxiosError(error)
+        ? { httpStatus: error.response?.status, transportCode: error.code }
+        : {}),
+      ...(typeof providerCode === 'string' && /^[A-Z0-9_]{1,40}$/.test(providerCode)
+        ? { providerCode }
+        : {}),
+    });
     await db
       .from('payment_attempts')
       .update({ status: 'unresolved' })
