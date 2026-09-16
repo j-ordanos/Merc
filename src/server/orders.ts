@@ -110,6 +110,9 @@ export async function checkout(userId: string, input: CheckoutInput) {
   } catch (error) {
     // Log classification only: Axios errors contain credentials and customer data.
     const providerCode = axios.isAxiosError(error) ? error.response?.data?.error?.code : undefined;
+    const providerMessage = axios.isAxiosError(error)
+      ? error.response?.data?.error?.message || error.response?.data?.message
+      : undefined;
     console.error('Merc payment initialization failed', {
       orderId,
       type: error instanceof Error ? error.name : 'UnknownError',
@@ -118,6 +121,9 @@ export async function checkout(userId: string, input: CheckoutInput) {
         : {}),
       ...(typeof providerCode === 'string' && /^[A-Z0-9_]{1,40}$/.test(providerCode)
         ? { providerCode }
+        : {}),
+      ...(typeof providerMessage === 'string' && providerMessage.length <= 160
+        ? { providerMessage }
         : {}),
     });
     await db
