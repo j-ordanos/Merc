@@ -75,6 +75,21 @@ describe('payment orchestration', () => {
     });
     expect(initialize).toHaveBeenCalledTimes(1);
   });
+  it('accepts the documented StarPay payment fields', async () => {
+    rpc.mockResolvedValue({ data: { order_id: order.id, claimed: true }, error: null });
+    from.mockImplementation((table: string) =>
+      chain({ data: table === 'products' ? sampleProducts : order, error: null }),
+    );
+    initialize.mockResolvedValue({
+      order_id: 'starpay-order',
+      payment_url: 'https://pay.starpayethiopia.com/checkout/starpay-order',
+      expires_at: null,
+    });
+    await expect(checkout('alice', input)).resolves.toMatchObject({
+      orderId: order.id,
+      paymentUrl: expect.stringContaining('starpayethiopia.com'),
+    });
+  });
   it('does not mark an order paid on a mismatched amount or unavailable provider', async () => {
     from.mockReturnValue(chain({ data: { provider_order_id: 'provider-1' }, error: null }));
     verify.mockResolvedValue({

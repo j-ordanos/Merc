@@ -22,8 +22,10 @@ function client() {
   });
 }
 const initializationSchema = yup.object({
-  order_id: yup.string().required(),
-  payment_url: yup.string().url().required(),
+  order_id: yup.string().nullable(),
+  payment_url: yup.string().url().nullable(),
+  billRefNo: yup.string().nullable(),
+  paymentUrl: yup.string().url().nullable(),
   expires_at: yup.string().nullable().default(null),
 });
 const verificationSchema = yup.object({
@@ -53,7 +55,10 @@ export async function initializePayment(order: Order) {
   });
   if (data.status !== 'success') throw new Error('Unexpected provider response');
   const result = await initializationSchema.validate(data.data, { strict: true });
-  const paymentUrl = new URL(result.payment_url);
+  const providerOrderId = result.order_id || result.billRefNo;
+  const paymentUrlValue = result.payment_url || result.paymentUrl;
+  if (!providerOrderId || !paymentUrlValue) throw new Error('Missing payment session details');
+  const paymentUrl = new URL(paymentUrlValue);
   if (
     paymentUrl.protocol !== 'https:' ||
     !(
@@ -62,7 +67,11 @@ export async function initializePayment(order: Order) {
     )
   )
     throw new Error('Unexpected payment URL');
-  return result;
+  return {
+    order_id: providerOrderId,
+    payment_url: paymentUrlValue,
+    expires_at: result.expires_at,
+  };
 }
 export async function verifyPayment(providerId: string) {
   const { data } = await client().post('/trdp/verify', { orderId: providerId });
