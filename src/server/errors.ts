@@ -12,6 +12,38 @@ export class AppError extends Error {
   }
 }
 export function fail(error: unknown) {
+  const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : '';
+  if (['PGRST202', 'PGRST205', '42P01', '42883'].includes(code)) {
+    console.error('Merc database setup incomplete', {
+      code,
+      action: 'Apply supabase/migrations/202609160001_store.sql, then run npm run db:seed.',
+    });
+    return NextResponse.json(
+      {
+        error: {
+          code: 'DATABASE_NOT_READY',
+          message:
+            'The store’s database setup is incomplete. Checkout will be available after setup is finished.',
+        },
+      },
+      { status: 503 },
+    );
+  }
+  if (code === '42501' || code === 'PGRST301' || code === 'PGRST302') {
+    console.error('Merc database access failed', {
+      code,
+      action: 'Check the server-side Supabase credentials and grants.',
+    });
+    return NextResponse.json(
+      {
+        error: {
+          code: 'DATABASE_ACCESS',
+          message: 'The store cannot access its order service right now. Please try again later.',
+        },
+      },
+      { status: 503 },
+    );
+  }
   if (error instanceof ValidationError)
     return NextResponse.json(
       {
@@ -35,7 +67,10 @@ export function fail(error: unknown) {
       { status: error.status },
     );
   // Never log upstream response bodies, credentials, or delivery details.
-  console.error('Merc request failed:', error instanceof Error ? error.name : 'UnknownError');
+  console.error('Merc request failed:', {
+    name: error instanceof Error ? error.name : 'UnknownError',
+    ...(/^[A-Z0-9_]{1,40}$/.test(code) ? { code } : {}),
+  });
   return NextResponse.json(
     {
       error: { code: 'INTERNAL', message: 'We couldn’t complete that request. Please try again.' },

@@ -2,20 +2,14 @@ import 'server-only';
 import axios from 'axios';
 import * as yup from 'yup';
 import type { Order } from '@/lib/types';
-import { appUrl, requiredEnv } from './config';
+import { paymentPublicUrl, requiredEnv } from './config';
 import { AppError } from './errors';
 const SANDBOX = 'https://sandbox-api.starpayethiopia.com/v1/starpay-api';
 export function paymentConfig() {
   const baseURL = process.env.STARPAY_BASE_URL || SANDBOX;
   if (baseURL !== SANDBOX)
     throw new AppError(503, 'SANDBOX_ONLY', 'Only sandbox payments are enabled for this store.');
-  const url = new URL(appUrl());
-  if (url.protocol !== 'https:')
-    throw new AppError(
-      503,
-      'PUBLIC_URL_REQUIRED',
-      'Payment setup requires a public HTTPS store address.',
-    );
+  paymentPublicUrl();
   return { baseURL, secret: requiredEnv('STARPAY_API_SECRET') };
 }
 function client() {
@@ -52,8 +46,8 @@ export async function initializePayment(order: Order) {
       item_name: i.name,
       unit_price: i.unit_price_minor / 100,
     })),
-    callbackURL: `${appUrl()}/api/payments/starpay/callback`,
-    redirectUrl: `${appUrl()}/orders/${order.id}`,
+    callbackURL: `${paymentPublicUrl()}/api/payments/starpay/callback`,
+    redirectUrl: `${paymentPublicUrl()}/orders/${order.id}`,
     expiredAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
     metadata: { order_reference: order.id },
   });

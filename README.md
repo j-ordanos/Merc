@@ -37,13 +37,31 @@ The seed uses curated Unsplash sample photographs as illustrative product imager
 | `NEXT_PUBLIC_SUPABASE_URL`             | Supabase project URL                                                                            |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public project key; access is protected by RLS                                                  |
 | `SUPABASE_SERVICE_ROLE_KEY`            | Server-only database/storage administration                                                     |
-| `APP_URL`                              | Canonical origin; localhost for development, public HTTPS for payment initialization            |
+| `APP_URL`                              | Canonical app/auth origin: localhost locally, the deployed HTTPS origin on Vercel               |
+| `STARPAY_PUBLIC_URL`                   | Optional HTTPS origin for payment callbacks/returns; defaults to `APP_URL`                      |
 | `STARPAY_API_SECRET`                   | Server-only merchant API secret, sent as `x-api-secret`                                         |
 | `STARPAY_WEBHOOK_SECRET`               | Separate callback signing secret from the merchant dashboard                                    |
 | `STARPAY_BASE_URL`                     | Defaults to `https://sandbox-api.starpayethiopia.com/v1/starpay-api`; other values are rejected |
 | `DEMO_CATALOG`                         | Set `true` for explicit read-only sample data; `false` for Supabase                             |
 
 Never prefix payment or service-role secrets with `NEXT_PUBLIC_`. Missing configuration returns a service-unavailable error. Without Supabase configuration, development also permits the sample catalog; production requires explicit `DEMO_CATALOG=true` or a configured project.
+
+### Local checkout with a deployed callback
+
+Use separate app and payment origins in `.env.local`:
+
+```dotenv
+APP_URL=http://localhost:3000
+STARPAY_PUBLIC_URL=https://merc-lac.vercel.app
+```
+
+Keep `APP_URL=https://merc-lac.vercel.app` on Vercel. The optional `STARPAY_PUBLIC_URL` may be the same or omitted there. Restart the local development server after changing environment variables. Allow the localhost auth callback in Supabase's redirect configuration.
+
+The local server calls StarPay over HTTPS; StarPay sends callbacks and browser returns to the deployed HTTPS site. Both environments must use the same Supabase project and payment secrets. You may need to sign in again on the deployed site to view the order because localhost cookies are separate. If StarPay restricts the initiating server's network, complete sandbox checkout on Vercel instead.
+
+### Checkout reports a database setup error
+
+Supabase authentication does not create the store tables. `DEMO_CATALOG=true` makes browsing work without those tables, but checkout still requires them. `PGRST205` means a required table is missing; `PGRST202` means the checkout function is missing. Apply the migration above, run `npm run db:seed`, then set `DEMO_CATALOG=false` locally and on Vercel. Redeploy Vercel after environment changes. Do not rerun the initial migration on a database where it was already successfully applied.
 
 ## Architecture
 
