@@ -4,6 +4,7 @@ import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { getProducts } from '@/server/catalog';
 import { ProductGrid } from '@/features/catalog/components';
 import { categories } from '@/features/catalog/data';
+import { money } from '@/lib/money';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,40 +28,56 @@ export default async function Home() {
     ...picks,
     ...products.filter((product) => !featured.includes(product) && !picks.includes(product)),
   ].slice(0, 4);
+  const heroProduct = featured[0] || products[0];
 
   return (
     <>
       <section className="home-hero container" aria-labelledby="home-title">
-        <div className="home-hero-copy">
-          <span className="eyebrow">THE MERC COLLECTION</span>
-          <h1 id="home-title">Useful pieces for home and beyond.</h1>
-          <p>Browse home goods, bags and stationery in one small, practical collection.</p>
+        <div className="home-hero-copy" data-reveal>
+          <span className="eyebrow">SHOP MERC · PRICES IN ETB</span>
+          <h1 id="home-title">Good things for home and everyday life.</h1>
+          <p>
+            Shop home goods, bags and everyday essentials. Add what you like to your bag and pay
+            through StarPay.
+          </p>
           <div className="home-hero-actions">
             <Link href="/products" className="button">
               Shop all products <ArrowRight size={18} />
             </Link>
-            <Link href="/products?category=home" className="text-link">
-              Browse home goods <ArrowUpRight size={17} />
+            <Link href="/docs" className="text-link">
+              How shopping works <ArrowUpRight size={17} />
             </Link>
           </div>
-          <span className="home-hero-caption">{products.length} products · Prices in ETB</span>
+          <span className="home-hero-caption">
+            {products.length} products across three categories
+          </span>
         </div>
-        <div className="home-hero-image">
-          <Image
-            src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1600&q=90"
-            alt="Living room with a sofa, coffee table and natural light"
-            fill
-            priority
-            sizes="(max-width: 760px) 100vw, 55vw"
-          />
-          <div className="home-hero-image-note">
-            Home & living <ArrowUpRight size={17} />
-          </div>
-        </div>
+        {heroProduct && (
+          <Link
+            href={`/products/${heroProduct.slug}`}
+            className="home-hero-image"
+            aria-label={`View ${heroProduct.name}`}
+          >
+            <Image
+              src={heroProduct.image_url}
+              alt={heroProduct.image_alt}
+              fill
+              priority
+              sizes="(max-width: 760px) 100vw, 55vw"
+            />
+            <div className="home-hero-image-note">
+              <span>
+                <strong>{heroProduct.name}</strong>
+                <small>{money(heroProduct.price_minor)}</small>
+              </span>
+              <ArrowUpRight size={20} />
+            </div>
+          </Link>
+        )}
       </section>
 
       <section className="section container home-products" aria-labelledby="featured-title">
-        <div className="section-heading">
+        <div className="section-heading" data-reveal>
           <div>
             <span className="eyebrow">START HERE</span>
             <h2 id="featured-title">Featured products</h2>
@@ -73,7 +90,7 @@ export default async function Home() {
       </section>
 
       <section className="section container home-categories" aria-labelledby="categories-title">
-        <div className="section-heading">
+        <div className="section-heading" data-reveal>
           <div>
             <span className="eyebrow">FIND YOUR WAY IN</span>
             <h2 id="categories-title">Shop by category</h2>
@@ -83,6 +100,7 @@ export default async function Home() {
           {categories.map((category) => (
             <Link
               className="category-card"
+              data-reveal
               key={category.id}
               href={`/products?category=${category.id}`}
             >
@@ -106,15 +124,18 @@ export default async function Home() {
       </section>
 
       <section className="home-service" aria-labelledby="service-title">
-        <div className="container home-service-inner">
+        <div className="container home-service-inner" data-reveal>
           <div>
-            <span className="eyebrow">BEFORE YOU CHECK OUT</span>
-            <h2 id="service-title">A note about checkout</h2>
+            <span className="eyebrow">READY WHEN YOU ARE</span>
+            <h2 id="service-title">From your bag to payment, simply.</h2>
           </div>
           <div>
-            <p>Pay through StarPay and follow your order status after checkout.</p>
-            <Link href="/help" className="text-link">
-              Payment and order help <ArrowUpRight size={17} />
+            <p>
+              Choose your pieces, review your order and complete payment on StarPay. Your order page
+              shows the latest payment status.
+            </p>
+            <Link href="/docs" className="text-link">
+              See how it works <ArrowUpRight size={17} />
             </Link>
           </div>
         </div>
@@ -124,7 +145,7 @@ export default async function Home() {
         className="section container home-products home-latest"
         aria-labelledby="latest-title"
       >
-        <div className="section-heading">
+        <div className="section-heading" data-reveal>
           <div>
             <span className="eyebrow">MORE TO EXPLORE</span>
             <h2 id="latest-title">From the collection</h2>

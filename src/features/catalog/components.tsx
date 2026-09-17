@@ -62,7 +62,7 @@ export function ProductCard({
   priority?: boolean;
 }) {
   return (
-    <article className="product-card">
+    <article className="product-card" data-reveal>
       <div className="product-image">
         <Link href={`/products/${product.slug}`}>
           <Image
@@ -132,7 +132,7 @@ export function Catalog({ initialProducts }: { initialProducts: Product[] }) {
     );
   return (
     <>
-      <div className="catalog-toolbar">
+      <div className="catalog-toolbar" id="categories">
         <div className="category-tabs" aria-label="Product categories">
           {[{ id: 'all', name: 'All products' }, ...categories].map((c) => (
             <button

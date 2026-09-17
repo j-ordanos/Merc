@@ -5,7 +5,7 @@ test('catalog filters, details, quantity controls, and persisted bag', async ({
 }, testInfo) => {
   await page.goto('/');
   await expect(
-    page.getByRole('heading', { name: 'Useful pieces for home and beyond.' }),
+    page.getByRole('heading', { name: 'Good things for home and everyday life.' }),
   ).toBeVisible();
   await page.getByRole('link', { name: 'Shop all products', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Shop all products', exact: true })).toBeVisible();
@@ -130,7 +130,7 @@ test('accessible navigation, mobile layout, and honest service errors', async ({
   await expect(
     page
       .getByRole('navigation', { name: 'Footer navigation' })
-      .getByRole('link', { name: 'Help', exact: true }),
+      .getByRole('link', { name: 'Help center', exact: true }),
   ).toBeVisible();
   if (testInfo.project.name === 'mobile') {
     await page.getByRole('button', { name: 'Open menu' }).click();
@@ -154,6 +154,45 @@ test('accessible navigation, mobile layout, and honest service errors', async ({
   await expect(page.locator('.notice-error')).toContainText('being set up');
   await page.goto('/products?q=nonexistent-product');
   await expect(page.getByRole('heading', { name: 'No products found' })).toBeVisible();
+});
+
+test('global search, shopping guide and scroll-aware header work across routes', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Search products' }).click();
+  await expect(page.getByRole('dialog', { name: 'Search products' })).toBeVisible();
+  await page.getByRole('searchbox', { name: 'Search products' }).fill('no-match-at-all');
+  await expect(page.getByText('No products match', { exact: false })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Search products' })).toBeFocused();
+  await page.getByRole('button', { name: 'Search products' }).click();
+  await page.getByRole('searchbox', { name: 'Search products' }).fill('mUG');
+  await expect(
+    page.getByRole('dialog').getByRole('link', { name: /The Everyday Mug/ }),
+  ).toBeVisible();
+  await page
+    .getByRole('dialog')
+    .getByRole('link', { name: /The Everyday Mug/ })
+    .click();
+  await expect(page).toHaveURL(/products\/everyday-ceramic-mug/);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.goto('/docs');
+  await expect(page.getByRole('heading', { name: 'Eight simple steps' })).toBeVisible();
+  await expect(page.locator('.steps-grid li')).toHaveCount(8);
+  await page.getByRole('link', { name: 'Common questions' }).click();
+  await expect(page.getByRole('heading', { name: 'Common questions' })).toBeVisible();
+  await page.goto('/story');
+  await expect(page.getByRole('heading', { name: 'A simpler place to shop.' })).toBeVisible();
+  await page.goto('/privacy');
+  await expect(page.getByRole('heading', { name: 'Privacy at Merc' })).toBeVisible();
+  await page.goto('/');
+  await page.evaluate(() =>
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }),
+  );
+  await expect(page.locator('.site-header')).toHaveClass(/is-hidden/);
+  await page.evaluate(() => window.scrollBy({ top: -120, behavior: 'instant' }));
+  await expect(page.locator('.site-header')).not.toHaveClass(/is-hidden/);
 });
 
 test('order filters and account dropdown actions stay separate', async ({ page }, testInfo) => {

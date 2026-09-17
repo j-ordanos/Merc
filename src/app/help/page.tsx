@@ -15,7 +15,8 @@ export default function Help() {
           <h2>About this store</h2>
           <p>
             Browse home goods, accessories and stationery. Prices are shown in Ethiopian birr (ETB)
-            and include tax. Your order details and payment status are available in order history.
+            on each product and at checkout. Your order details and payment status are available in
+            order history.
           </p>
         </section>
         <section id="payment">
@@ -48,6 +49,14 @@ export default function Help() {
           <Link href="/auth/forgot-password" className="text-link">
             Reset your password →
           </Link>
+        </section>
+        <section id="contact">
+          <h2>Contact</h2>
+          <p>
+            Sample support address: <strong>support@merc.example</strong>. Replace this with an
+            active Merc contact before a live launch. For now, the answers above and the{' '}
+            <Link href="/docs">shopping guide</Link> explain the current flow.
+          </p>
         </section>
       </div>
     </div>
