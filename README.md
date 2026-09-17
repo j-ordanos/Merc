@@ -48,6 +48,8 @@ If your network prevents Node from downloading the photos, cache them as `<produ
 
 Never prefix payment or service-role secrets with `NEXT_PUBLIC_`. Missing configuration returns a service-unavailable error. Without Supabase configuration, development also permits the sample catalog; production requires explicit `DEMO_CATALOG=true` or a configured project.
 
+Use the **Secret Key** from the sandbox merchant account for `STARPAY_API_SECRET` and the **Webhook Secret Code** from that same account for `STARPAY_WEBHOOK_SECRET`. The challenge document's API key is only usable if StarPay still recognizes it and grants it access to that merchant; it cannot be paired with a webhook secret from another merchant. A provider HTTP 401 is reported as `PAYMENT_CREDENTIALS_REJECTED` in the `/api/checkout` response; server logs record the provider HTTP status and error code without logging secrets. Replace the rejected sandbox key in `.env.local` and Vercel, restart locally, and redeploy Vercel. A 401 attempt is known to have failed authentication, so checkout uses a new idempotency key on the next submission. Other ambiguous failures remain unresolved to avoid a possible duplicate charge.
+
 ### Local checkout with a deployed callback
 
 Use separate app and payment origins in `.env.local`:
@@ -60,6 +62,8 @@ STARPAY_PUBLIC_URL=https://merc-lac.vercel.app
 Keep `APP_URL=https://merc-lac.vercel.app` on Vercel. The optional `STARPAY_PUBLIC_URL` may be the same or omitted there. Restart the local development server after changing environment variables. Allow the localhost auth callback in Supabase's redirect configuration.
 
 The local server calls StarPay over HTTPS; StarPay sends callbacks and browser returns to the deployed HTTPS site. Both environments must use the same Supabase project and payment secrets. You may need to sign in again on the deployed site to view the order because localhost cookies are separate. If StarPay restricts the initiating server's network, complete sandbox checkout on Vercel instead.
+
+To test through an HTTPS tunnel, open the **store itself** through the tunnel and set `APP_URL` and `STARPAY_PUBLIC_URL` to that same tunnel origin. Add its `/auth/callback` URL to Supabase's redirect allowlist. `STARPAY_PUBLIC_URL` only sets StarPay's callback and browser return URLs; it does not proxy the server's outbound request to StarPay. Opening the store on localhost while returning to the tunnel creates a separate browser origin and loses the localhost session cookie.
 
 ### Checkout reports a database setup error
 
@@ -99,8 +103,8 @@ Errors use `{ error: { code, message, fields?, orderId? } }` and an appropriate 
 2. A Postgres function locks the `(user, idempotency key)` operation, checks cart rows, locks product prices, and writes the order, snapshots, and payment attempt in one transaction. Reusing a key with different input is rejected. Only the winning request initializes StarPay.
 3. The server calls `/trdp/order` and stores the provider ID, hosted payment URL, and expiration. Only HTTPS URLs on StarPay's domain are accepted. Amounts are converted to major units at this boundary.
 4. StarPay redirects to the order page. That page verifies through `/trdp/verify`; redirects and browser parameters never mark an order paid.
-5. Callback signatures use HMAC-SHA256 over `${timestamp}.${JSON.stringify(payload)}`, with constant-time comparison and five-minute clock tolerance. The handler accepts documented `order_id` at the top level or inside `data`, resolves the saved attempt, then independently verifies it. Unknown callback shapes fail closed.
-6. Paid status requires matching provider order ID, amount, and ETB currency. Duplicate callbacks are harmless. Database updates exclude already-paid rows, preventing late failures from reversing success.
+5. Callback signatures use HMAC-SHA256 over `${timestamp}.${JSON.stringify(payload)}`, with constant-time comparison and five-minute clock tolerance. The handler accepts documented `billRefNo` or `order_id` at the top level or inside `data`, resolves the saved attempt, then independently verifies it. Unknown callback shapes fail closed.
+6. Paid status requires a matching bill reference when StarPay echoes one, a matching order reference when provided, and the expected amount and ETB currency. StarPay may return a separate internal UUID as `order_id` for a queried bill reference. Duplicate callbacks are harmless. Database updates exclude already-paid rows, preventing late failures from reversing success.
 7. Status polling runs every five seconds for up to two minutes while the page is open. A manual check remains available; authenticated order history supports returning later.
 
 **Ambiguous initialization:** the provider may have accepted a request even if its response timed out. Such attempts stay unresolved; the app does not automatically initialize again. The checkout error links to the saved order. If the provider ID was never saved, an operator must reconcile the internal order reference against the merchant dashboard before any new payment attempt. This deliberately favors avoiding duplicate charges over automatically recovering every network failure.

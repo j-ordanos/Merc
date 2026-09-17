@@ -103,6 +103,48 @@ describe('payment verification', () => {
       ),
     ).toBe('pending');
   });
+  it('accepts StarPay verification with a bill reference and separate internal order UUID', () => {
+    const providerResponse = {
+      ...payload,
+      order_id: '3c90c3cc-0d44-4b50-8888-8dd25736052a',
+      billRefNo: 'provider-1',
+      metadata: { order_reference: 'merc-order' },
+    };
+    expect(
+      verifiedStatus(providerResponse, {
+        providerId: 'provider-1',
+        orderId: 'merc-order',
+        total: 85000,
+      }),
+    ).toBe('paid');
+    expect(() =>
+      verifiedStatus(
+        { ...providerResponse, billRefNo: 'other' },
+        {
+          providerId: 'provider-1',
+          orderId: 'merc-order',
+          total: 85000,
+        },
+      ),
+    ).toThrow();
+    expect(() =>
+      verifiedStatus(providerResponse, {
+        providerId: 'provider-1',
+        orderId: 'another-order',
+        total: 85000,
+      }),
+    ).toThrow();
+    expect(
+      verifiedStatus(
+        { ...providerResponse, status: 'SETTLED' },
+        {
+          providerId: 'provider-1',
+          orderId: 'merc-order',
+          total: 85000,
+        },
+      ),
+    ).toBe('paid');
+  });
 });
 describe('persistent cart behavior', () => {
   beforeEach(() => useCart.setState({ items: [], settledOrders: [] }));

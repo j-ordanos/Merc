@@ -30,6 +30,8 @@ const initializationSchema = yup.object({
 });
 const verificationSchema = yup.object({
   order_id: yup.string().required(),
+  billRefNo: yup.string().optional(),
+  metadata: yup.object({ order_reference: yup.string().optional() }).optional(),
   status: yup.string().required(),
   amount: yup.number().required(),
   currency: yup.string().required(),

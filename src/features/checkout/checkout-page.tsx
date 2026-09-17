@@ -102,8 +102,12 @@ export function CheckoutPage() {
             window.location.assign(data.paymentUrl);
           } catch (e) {
             setError(errorMessage(e));
-            if (axios.isAxiosError<ApiErrorBody>(e) && e.response?.data.error.orderId)
-              setPendingOrder(e.response.data.error.orderId);
+            if (axios.isAxiosError<ApiErrorBody>(e)) {
+              if (e.response?.data.error.orderId) setPendingOrder(e.response.data.error.orderId);
+              // A provider 401 cannot have created a payment, so the next submit can use a fresh key.
+              if (e.response?.data.error.code === 'PAYMENT_CREDENTIALS_REJECTED')
+                sessionStorage.removeItem('merc-checkout');
+            }
             submitting.current = false;
           }
         }}
