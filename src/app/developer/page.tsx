@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { InfoPage, InfoSection } from '@/components/info-page';
+import { publicPageMetadata } from '@/lib/seo';
 
-export const metadata = { title: 'About the developer' };
+export const metadata = publicPageMetadata(
+  '/developer',
+  'About the developer',
+  'Learn about the Merc storefront project and its approach to shopping and checkout.',
+);
 
 export default function Developer() {
   return (

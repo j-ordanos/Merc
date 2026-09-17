@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { InfoPage, InfoSection } from '@/components/info-page';
+import { publicPageMetadata } from '@/lib/seo';
 
-export const metadata = { title: 'Terms of use' };
+export const metadata = publicPageMetadata(
+  '/terms',
+  'Terms of use',
+  'Terms for using the Merc sandbox storefront and its checkout.',
+);
 
 export default function Terms() {
   return (

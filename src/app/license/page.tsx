@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { InfoPage, InfoSection } from '@/components/info-page';
+import { publicPageMetadata } from '@/lib/seo';
 
-export const metadata = { title: 'License and agreement' };
+export const metadata = publicPageMetadata(
+  '/license',
+  'License and agreement',
+  'Information about use of the Merc storefront, software and content.',
+);
 
 export default function License() {
   return (

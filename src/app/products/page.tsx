@@ -1,7 +1,12 @@
 import { Suspense } from 'react';
 import { getProducts } from '@/server/catalog';
 import { Catalog } from '@/features/catalog/components';
-export const metadata = { title: 'The collection' };
+import { publicPageMetadata } from '@/lib/seo';
+export const metadata = publicPageMetadata(
+  '/products',
+  'Shop all products',
+  'Browse home goods, accessories and everyday essentials at Merc. Search the collection and view prices in ETB.',
+);
 export const dynamic = 'force-dynamic';
 export default async function Products() {
   const products = await getProducts();

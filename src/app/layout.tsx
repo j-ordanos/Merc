@@ -11,9 +11,13 @@ import { Providers } from '@/components/providers';
 import { Header, Footer } from '@/components/shell';
 import { ToastViewport } from '@/components/toast';
 import { NavigationEffects } from '@/components/navigation-effects';
+import { siteOrigin } from '@/lib/seo';
 export const metadata: Metadata = {
-  title: { default: 'Merc — Home goods and everyday essentials', template: '%s | Merc' },
-  description: 'Browse home goods, accessories and everyday essentials in the Merc sandbox store.',
+  metadataBase: new URL(siteOrigin()),
+  applicationName: 'Merc',
+  title: { default: 'Merc | Home goods and everyday essentials', template: '%s | Merc' },
+  description: 'Shop home goods, bags and everyday essentials in Ethiopian birr at Merc.',
+  robots: process.env.VERCEL_ENV === 'preview' ? { index: false, follow: false } : undefined,
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

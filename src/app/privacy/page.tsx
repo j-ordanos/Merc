@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { InfoPage, InfoSection } from '@/components/info-page';
+import { publicPageMetadata } from '@/lib/seo';
 
-export const metadata = { title: 'Privacy' };
+export const metadata = publicPageMetadata(
+  '/privacy',
+  'Privacy',
+  'How Merc uses account, bag, checkout and order information.',
+);
 
 export default function Privacy() {
   return (

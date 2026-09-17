@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { InfoPage, InfoSection } from '@/components/info-page';
+import { publicPageMetadata } from '@/lib/seo';
 
-export const metadata = { title: 'Our story' };
+export const metadata = publicPageMetadata(
+  '/story',
+  'Our story',
+  'Why Merc was built and what you can expect from the storefront.',
+);
 
 export default function Story() {
   return (

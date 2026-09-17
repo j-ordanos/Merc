@@ -1,5 +1,5 @@
 import { OrderPage } from '@/features/orders/order-pages';
-export const metadata = { title: 'Order details' };
+export const metadata = { title: 'Order details', robots: { index: false, follow: false } };
 export default async function Order({ params }: { params: Promise<{ id: string }> }) {
   return (
     <div className="container page-section">

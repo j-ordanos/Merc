@@ -195,6 +195,45 @@ test('global search, shopping guide and scroll-aware header work across routes',
   await expect(page.locator('.site-header')).not.toHaveClass(/is-hidden/);
 });
 
+test('public pages have share metadata and private pages are noindex', async ({
+  page,
+  request,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    'http://127.0.0.1:3100',
+  );
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    'content',
+    'http://127.0.0.1:3100/opengraph-image',
+  );
+  await page.goto('/products/everyday-ceramic-mug');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    'http://127.0.0.1:3100/products/everyday-ceramic-mug',
+  );
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    'content',
+    'The Everyday Mug | Merc',
+  );
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    'content',
+    /images\.unsplash\.com/,
+  );
+  const image = await request.get('/opengraph-image');
+  expect(image.ok()).toBe(true);
+  expect(image.headers()['content-type']).toContain('image/png');
+  expect(await (await request.get('/sitemap.xml')).text()).toContain(
+    '/products/everyday-ceramic-mug',
+  );
+  const rules = await (await request.get('/robots.txt')).text();
+  expect(rules).toContain('Disallow: /orders');
+  expect(rules).toContain('Sitemap: http://127.0.0.1:3100/sitemap.xml');
+  await page.goto('/cart');
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+});
+
 test('order filters and account dropdown actions stay separate', async ({ page }, testInfo) => {
   const orders = [
     {

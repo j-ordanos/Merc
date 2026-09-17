@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { InfoPage } from '@/components/info-page';
+import { publicPageMetadata } from '@/lib/seo';
 
-export const metadata = { title: 'How Merc works' };
+export const metadata = publicPageMetadata(
+  '/docs',
+  'How Merc works',
+  'A step-by-step guide to browsing, checkout, StarPay sandbox payment and order status at Merc.',
+);
 
 const steps = [
   [

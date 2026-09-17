@@ -1,6 +1,11 @@
 import Link from 'next/link';
+import { publicPageMetadata } from '@/lib/seo';
 
-export const metadata = { title: 'Help and store information' };
+export const metadata = publicPageMetadata(
+  '/help',
+  'Help center',
+  'Help with Merc orders, account access and StarPay sandbox payment status.',
+);
 
 export default function Help() {
   return (

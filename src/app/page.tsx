@@ -5,8 +5,14 @@ import { getProducts } from '@/server/catalog';
 import { ProductGrid } from '@/features/catalog/components';
 import { categories } from '@/features/catalog/data';
 import { money } from '@/lib/money';
+import { publicPageMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+export const metadata = publicPageMetadata(
+  '/',
+  'Home goods and everyday essentials',
+  'Shop home goods, bags, stationery and everyday essentials in Ethiopian birr at Merc.',
+);
 
 const categoryImages = {
   home: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1100&q=85',

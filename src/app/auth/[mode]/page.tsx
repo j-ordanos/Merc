@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { AuthForm } from '@/features/auth/auth-form';
-export const metadata = { title: 'Your account' };
+export const metadata = { title: 'Your account', robots: { index: false, follow: false } };
 export default async function Auth({ params }: { params: Promise<{ mode: string }> }) {
   const { mode } = await params;
   if (
