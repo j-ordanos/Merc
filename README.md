@@ -109,9 +109,11 @@ Errors use `{ error: { code, message, fields?, orderId? } }` and an appropriate 
 
 **Ambiguous initialization:** the provider may have accepted a request even if its response timed out. Such attempts stay unresolved; the app does not automatically initialize again. The checkout error links to the saved order. If the provider ID was never saved, an operator must reconcile the internal order reference against the merchant dashboard before any new payment attempt. This deliberately favors avoiding duplicate charges over automatically recovering every network failure.
 
+**Older `GEN_019` attempts:** StarPay returned HTTP 400 before creating a payment when the server sent `0900000000` directly. After confirming that an affected order has no payment in the StarPay dashboard, remove the `merc-checkout` key from browser session storage and submit a fresh checkout. The old unresolved order will remain pending until an operator cleans it up. The server now sends `+251900000000`, and future `GEN_019` rejections are recorded as failed attempts.
+
 Payment verification failures preserve the current order status and show a retry message. Callbacks return 503 when verification or attempt lookup is temporarily unavailable. Signed callback verification requires the separate webhook secret; without it, browser-initiated verification can still check known provider IDs, but webhook verification cannot pass.
 
-Use **0900000000 only**. Both the input schema and server adapter restrict this implementation to sandbox behavior. No production payments or real customer phone numbers are supported.
+Use **0900000000 only** in the checkout form. The server sends its equivalent E.164 form, `+251900000000`, to StarPay because the transaction API rejects the local format with `GEN_019`. Both the input schema and server adapter restrict this implementation to sandbox behavior. No production payments or real customer phone numbers are supported.
 
 Official references: [create transaction](https://developer.starpayethiopia.com/api/endpoint/transaction), [verify payment](https://developer.starpayethiopia.com/api/endpoint/verification), [callback signatures](https://developer.starpayethiopia.com/api/sign), [test number](https://developer.starpayethiopia.com/api/test-numbers). Merchant gateway activation and domain/network approval are external prerequisites; putting calls on the server does not itself grant access.
 

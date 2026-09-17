@@ -97,6 +97,28 @@ describe('payment orchestration', () => {
     expect(attempt.update).toHaveBeenCalledWith({ status: 'failed' });
     vi.restoreAllMocks();
   });
+  it('identifies StarPay phone validation rejection as a definite failed attempt', async () => {
+    const attempt = chain({ data: order, error: null });
+    from.mockImplementation((table: string) =>
+      table === 'products'
+        ? chain({ data: sampleProducts, error: null })
+        : table === 'payment_attempts'
+          ? attempt
+          : chain({ data: order, error: null }),
+    );
+    initialize.mockRejectedValue({
+      isAxiosError: true,
+      name: 'AxiosError',
+      response: { status: 400, data: { error: { code: 'GEN_019' } } },
+    });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await expect(checkout('alice', input)).rejects.toMatchObject({
+      code: 'PAYMENT_REQUEST_REJECTED',
+      orderId: order.id,
+    });
+    expect(attempt.update).toHaveBeenCalledWith({ status: 'failed' });
+    vi.restoreAllMocks();
+  });
   it('accepts the documented StarPay payment fields', async () => {
     rpc.mockResolvedValue({ data: { order_id: order.id, claimed: true }, error: null });
     from.mockImplementation((table: string) =>

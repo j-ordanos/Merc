@@ -111,6 +111,8 @@ export async function checkout(userId: string, input: CheckoutInput) {
     // Log classification only: Axios errors contain credentials and customer data.
     const providerCode = axios.isAxiosError(error) ? error.response?.data?.error?.code : undefined;
     const credentialsRejected = axios.isAxiosError(error) && error.response?.status === 401;
+    const requestRejected =
+      axios.isAxiosError(error) && error.response?.status === 400 && providerCode === 'GEN_019';
     console.error('Merc payment initialization failed', {
       orderId,
       type: error instanceof Error ? error.name : 'UnknownError',
@@ -123,7 +125,7 @@ export async function checkout(userId: string, input: CheckoutInput) {
     });
     await db
       .from('payment_attempts')
-      .update({ status: credentialsRejected ? 'failed' : 'unresolved' })
+      .update({ status: credentialsRejected || requestRejected ? 'failed' : 'unresolved' })
       .eq('order_id', orderId)
       .eq('status', 'initializing');
     if (credentialsRejected)
@@ -131,6 +133,13 @@ export async function checkout(userId: string, input: CheckoutInput) {
         503,
         'PAYMENT_CREDENTIALS_REJECTED',
         'StarPay rejected this store’s API credentials. Please contact the store operator and try again after the configuration is fixed.',
+        orderId,
+      );
+    if (requestRejected)
+      throw new AppError(
+        502,
+        'PAYMENT_REQUEST_REJECTED',
+        'StarPay rejected the payment request. Please contact the store operator before trying again.',
         orderId,
       );
     throw new AppError(

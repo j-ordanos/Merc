@@ -37,12 +37,15 @@ const verificationSchema = yup.object({
   currency: yup.string().required(),
 });
 export async function initializePayment(order: Order) {
+  if (order.delivery.phone !== '0900000000')
+    throw new AppError(400, 'INVALID_SANDBOX_PHONE', 'Use the sandbox test number 0900000000.');
   const { data } = await client().post('/trdp/order', {
     amount: order.total_minor / 100,
     currency: 'ETB',
     description: `Merc order ${order.id}`,
     customerName: order.delivery.name,
-    customerPhoneNumber: order.delivery.phone,
+    // StarPay rejects the local display form; its transaction API requires E.164.
+    customerPhoneNumber: '+251900000000',
     customerEmail: order.delivery.email,
     items: order.order_items.map((i) => ({
       productId: i.product_id,

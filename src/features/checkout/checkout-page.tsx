@@ -104,8 +104,11 @@ export function CheckoutPage() {
             setError(errorMessage(e));
             if (axios.isAxiosError<ApiErrorBody>(e)) {
               if (e.response?.data.error.orderId) setPendingOrder(e.response.data.error.orderId);
-              // A provider 401 cannot have created a payment, so the next submit can use a fresh key.
-              if (e.response?.data.error.code === 'PAYMENT_CREDENTIALS_REJECTED')
+              // Definite provider rejections cannot have created a payment.
+              if (
+                e.response?.data.error.code === 'PAYMENT_CREDENTIALS_REJECTED' ||
+                e.response?.data.error.code === 'PAYMENT_REQUEST_REJECTED'
+              )
                 sessionStorage.removeItem('merc-checkout');
             }
             submitting.current = false;
