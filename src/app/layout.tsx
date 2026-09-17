@@ -8,10 +8,10 @@ import '@fontsource/cormorant-garamond/400-italic.css';
 import './globals.css';
 import { Providers } from '@/components/providers';
 import { Header, Footer } from '@/components/shell';
+import { ToastViewport } from '@/components/toast';
 export const metadata: Metadata = {
-  title: { default: 'Merc — Good things for your everyday', template: '%s | Merc' },
-  description:
-    'Thoughtfully chosen home goods, accessories, and everyday essentials. A little less ordinary. A little more you.',
+  title: { default: 'Merc — Home goods and everyday essentials', template: '%s | Merc' },
+  description: 'Browse home goods, accessories and everyday essentials in the Merc sandbox store.',
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -24,6 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <Header />
           <main id="main">{children}</main>
           <Footer />
+          <ToastViewport />
         </Providers>
       </body>
     </html>

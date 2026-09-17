@@ -1,88 +1,59 @@
 'use client';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import {
-  ArrowUpRight,
-  ArrowRight,
-  ShoppingBag,
-  UserRound,
-  Search,
-  Menu,
-  X,
-  Leaf,
-  Truck,
-  ShieldCheck,
-} from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { ArrowRight, ArrowUpRight, Menu, Search, ShoppingBag, X } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/features/cart/store';
-import { useSession } from '@/features/auth/use-session';
-import { api, errorMessage } from '@/lib/http';
-import { useQueryClient } from '@tanstack/react-query';
+import { AccountMenu } from '@/components/account-menu';
+
+const navigation = [
+  { label: 'Shop', href: '/products' },
+  { label: 'Orders', href: '/orders' },
+];
+
 export function Header() {
   const path = usePathname();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [error, setError] = useState('');
   const cart = useCart();
-  const session = useSession();
-  const query = useQueryClient();
-  async function logout() {
-    try {
-      await api.post('/auth/logout');
-      query.clear();
-      router.push('/');
-      router.refresh();
-      setOpen(false);
-    } catch (e) {
-      setError(errorMessage(e));
-    }
-  }
+  const count = cart.hydrated ? cart.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+
   return (
     <>
       <div className="announcement">
-        <span>Good things, thoughtfully chosen.</span>
-        <span>
-          Free delivery on every order <ArrowUpRight size={12} />
-        </span>
+        <span>Merc / everyday goods</span>
+        <span>Prices in ETB · Checkout with StarPay</span>
       </div>
       <header className="site-header">
         <div className="container header-inner">
           <Link href="/" className="wordmark" aria-label="Merc home">
-            merc<span>®</span>
+            merc<span>·</span>
           </Link>
           <nav className="desktop-nav" aria-label="Main navigation">
-            <Link className={path === '/products' ? 'active' : ''} href="/products">
-              Shop all
-            </Link>
-            <Link href="/products?category=home">Home & living</Link>
-            <Link href="/products?category=accessories">Accessories</Link>
-            <Link href="/products?category=essentials">Everyday essentials</Link>
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                className={
+                  path === item.href || (item.href === '/orders' && path.startsWith('/orders/'))
+                    ? 'active'
+                    : ''
+                }
+                href={item.href}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
           <div className="header-actions">
             <Link
               href="/products?focus=search"
-              className="icon-button desktop-only"
+              className="icon-button search-action"
               aria-label="Search products"
             >
-              <Search size={20} />
+              <Search size={20} strokeWidth={1.7} />
             </Link>
-            <Link
-              href={session.data?.user ? '/orders' : '/auth/login'}
-              className="icon-button"
-              aria-label={session.data?.user ? 'Your orders' : 'Sign in'}
-            >
-              <UserRound size={20} />
-            </Link>
-            <Link
-              href="/cart"
-              className="bag-link"
-              aria-label={`Shopping bag, ${cart.hydrated ? cart.items.reduce((s, i) => s + i.quantity, 0) : 0} items`}
-            >
-              <ShoppingBag size={19} />
-              <span className="desktop-only">Bag</span>
-              <span className="bag-count">
-                {cart.hydrated ? cart.items.reduce((s, i) => s + i.quantity, 0) : 0}
-              </span>
+            <Link href="/cart" className="bag-link" aria-label={`Shopping bag, ${count} items`}>
+              <ShoppingBag size={20} strokeWidth={1.7} />
+              <span className="bag-count">{count}</span>
             </Link>
             <button
               className="icon-button mobile-menu"
@@ -93,105 +64,60 @@ export function Header() {
             >
               {open ? <X size={22} /> : <Menu size={22} />}
             </button>
+            <AccountMenu />
           </div>
         </div>
         {open && (
           <nav id="mobile-navigation" className="mobile-nav" aria-label="Mobile navigation">
-            {[
-              ['Shop all', '/products'],
-              ['Home & living', '/products?category=home'],
-              ['Accessories', '/products?category=accessories'],
-              ['Everyday essentials', '/products?category=essentials'],
-              ['Your orders', '/orders'],
-            ].map(([label, href]) => (
-              <Link key={href} href={href} onClick={() => setOpen(false)}>
-                {label}
-                <ArrowRight size={16} />
+            {navigation.map((item) => (
+              <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>
+                {item.label} <ArrowRight size={17} />
               </Link>
             ))}
-            {session.data?.user && <button onClick={logout}>Sign out</button>}
-            {error && <p role="alert">{error}</p>}
           </nav>
         )}
       </header>
     </>
   );
 }
-export function Benefits() {
-  return (
-    <div className="benefits container">
-      <div>
-        <Truck />
-        <span>
-          <strong>On the house</strong>
-          <small>Free delivery, every order.</small>
-        </span>
-      </div>
-      <div>
-        <Leaf />
-        <span>
-          <strong>Less, but better</strong>
-          <small>Considered pieces. Everyday purpose.</small>
-        </span>
-      </div>
-      <div>
-        <ShieldCheck />
-        <span>
-          <strong>Shop with confidence</strong>
-          <small>Secure checkout with StarPay.</small>
-        </span>
-      </div>
-    </div>
-  );
-}
+
 export function Footer() {
   return (
-    <footer>
+    <footer className="site-footer">
       <div className="container footer-main">
-        <div>
+        <div className="footer-brand">
+          <span className="footer-kicker">MERC / ADDIS ABABA</span>
           <Link className="wordmark" href="/">
-            merc<span>®</span>
+            merc<span>·</span>
           </Link>
-          <p>
-            For a life well lived.
-            <br />
-            Good things for your everyday.
-          </p>
+          <p>Home goods, accessories and useful pieces for daily life.</p>
+          <Link className="footer-cta" href="/products">
+            Browse all products <ArrowUpRight size={17} />
+          </Link>
         </div>
-        <div className="footer-links">
+        <nav className="footer-links" aria-label="Footer navigation">
           <div>
-            <span className="eyebrow">Explore</span>
-            <Link href="/products">The collection</Link>
+            <span className="footer-title">Shop</span>
             <Link href="/products?category=home">Home & living</Link>
             <Link href="/products?category=accessories">Accessories</Link>
+            <Link href="/products?category=essentials">Everyday essentials</Link>
           </div>
           <div>
-            <span className="eyebrow">Make yourself at home</span>
-            <Link href="/orders">Your orders</Link>
-            <Link href="/cart">Your shopping bag</Link>
-            <Link href="/about">Our story & helpful details</Link>
+            <span className="footer-title">Help & account</span>
+            <Link href="/help">Help</Link>
+            <Link href="/orders">Orders</Link>
+            <Link href="/cart">Shopping bag</Link>
+            <Link href="/auth/forgot-password">Password help</Link>
           </div>
-        </div>
-        <div className="footer-note">
-          <span className="eyebrow">A little more intentional.</span>
-          <p>
-            Surround yourself with things
-            <br />
-            you love to use.
-          </p>
-          <Link className="text-link" href="/about">
-            Meet Merc <ArrowUpRight size={16} />
-          </Link>
-        </div>
+        </nav>
       </div>
       <div className="container footer-bottom">
-        <span>© {new Date().getFullYear()} Merc. Made for everyday.</span>
-        <span>
-          Addis Ababa, Ethiopia <span className="dot">·</span> ETB
-        </span>
-        <span className="payment-wordmark">
-          Secure payments by <strong>StarPay ↗</strong>
-        </span>
+        <span>© {new Date().getFullYear()} Merc</span>
+        <div className="footer-meta">
+          <span>Prices in ETB</span>
+          <span className="footer-dot" aria-hidden="true" />
+          <span>StarPay sandbox checkout</span>
+        </div>
       </div>
     </footer>
   );

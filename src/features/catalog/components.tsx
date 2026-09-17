@@ -6,8 +6,7 @@ import {
   Check,
   Plus,
   Search,
-  SlidersHorizontal,
-  Truck,
+  ChevronDown,
   ShieldCheck,
   ArrowLeft,
 } from 'lucide-react';
@@ -20,6 +19,7 @@ import { api, errorMessage } from '@/lib/http';
 import { useCart } from '@/features/cart/store';
 import { categories } from './data';
 import { EmptyState, Notice, Quantity } from '@/components/ui';
+import { useToast } from '@/components/toast';
 export function AddToBag({
   product,
   full = false,
@@ -30,6 +30,7 @@ export function AddToBag({
   quantity?: number;
 }) {
   const add = useCart((s) => s.add);
+  const showToast = useToast((s) => s.show);
   const [added, setAdded] = useState(false);
   return (
     <button
@@ -38,6 +39,7 @@ export function AddToBag({
       aria-label={added ? `${product.name} added to bag` : `Add ${product.name} to bag`}
       onClick={() => {
         add(product.id, quantity);
+        showToast(`${product.name} added to bag`, '/cart', 'View bag');
         setAdded(true);
         window.setTimeout(() => setAdded(false), 1800);
       }}
@@ -132,7 +134,7 @@ export function Catalog({ initialProducts }: { initialProducts: Product[] }) {
     <>
       <div className="catalog-toolbar">
         <div className="category-tabs" aria-label="Product categories">
-          {[{ id: 'all', name: 'All things good' }, ...categories].map((c) => (
+          {[{ id: 'all', name: 'All products' }, ...categories].map((c) => (
             <button
               key={c.id}
               className={category === c.id ? 'selected' : ''}
@@ -148,14 +150,14 @@ export function Catalog({ initialProducts }: { initialProducts: Product[] }) {
             <Search size={18} />
             <input
               aria-label="Search the collection"
-              placeholder="Find something good…"
+              placeholder="Search products"
               value={search}
               autoFocus={params.get('focus') === 'search'}
               onChange={(e) => change('q', e.target.value)}
             />
           </label>
           <label className="sort-input">
-            <SlidersHorizontal size={15} />
+            <span>Sort by</span>
             <select
               aria-label="Sort products"
               value={sort}
@@ -166,11 +168,12 @@ export function Catalog({ initialProducts }: { initialProducts: Product[] }) {
               <option value="price-high">Price: high to low</option>
               <option value="name">Name: A–Z</option>
             </select>
+            <ChevronDown size={15} aria-hidden="true" />
           </label>
         </div>
       </div>
       <p className="result-count" aria-live="polite">
-        {products.length} thoughtfully chosen pieces
+        {products.length} {products.length === 1 ? 'product' : 'products'}
       </p>
       {query.isError && (
         <Notice error>
@@ -183,10 +186,7 @@ export function Catalog({ initialProducts }: { initialProducts: Product[] }) {
       {products.length ? (
         <ProductGrid products={products} />
       ) : (
-        <EmptyState
-          title="Nothing here just yet."
-          description="Try another search or explore a different category."
-        />
+        <EmptyState title="No products found" description="Try another search or category." />
       )}
     </>
   );
@@ -217,7 +217,7 @@ export function ProductDetail({ product }: { product: Product }) {
           <div className="detail-buy">
             <Quantity quantity={quantity} onChange={setQuantity} name={product.name} />
             <span className="muted">
-              {product.available ? 'Ready for your everyday' : 'Temporarily out of stock'}
+              {product.available ? 'Available' : 'Currently unavailable'}
             </span>
           </div>
           <AddToBag product={product} full quantity={quantity} />
@@ -226,26 +226,16 @@ export function ProductDetail({ product }: { product: Product }) {
           </Link>
           <div className="detail-perks">
             <span>
-              <Truck size={17} /> Free delivery
-            </span>
-            <span>
               <ShieldCheck size={17} /> Secure checkout
             </span>
           </div>
           <details open>
-            <summary>The thoughtful details</summary>
+            <summary>Product details</summary>
             <ul>
               {product.details.map((d) => (
                 <li key={d}>{d}</li>
               ))}
             </ul>
-          </details>
-          <details>
-            <summary>Delivery & care</summary>
-            <p>
-              Free delivery within Addis Ababa. Your delivery details are collected at checkout.
-              Follow the care instructions above to keep your piece looking its best.
-            </p>
           </details>
         </div>
       </div>

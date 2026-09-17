@@ -1,25 +1,33 @@
 import { test, expect } from '@playwright/test';
 import { sampleProducts } from '../src/features/catalog/data';
-test('catalog filters, details, quantity controls, and persisted bag', async ({ page }) => {
+test('catalog filters, details, quantity controls, and persisted bag', async ({
+  page,
+}, testInfo) => {
   await page.goto('/');
   await expect(
-    page.getByRole('heading', { name: 'Good things. For your everyday.' }),
+    page.getByRole('heading', { name: 'Useful pieces for home and beyond.' }),
   ).toBeVisible();
-  await page.getByRole('link', { name: 'Explore the collection', exact: true }).click();
+  await page.getByRole('link', { name: 'Shop all products', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Shop all products', exact: true })).toBeVisible();
+  await expect(page.locator('.catalog-toolbar')).toBeVisible();
+  await page.screenshot({ path: `artifacts/catalog-${testInfo.project.name}.png` });
   await page.getByRole('button', { name: 'Accessories', exact: true }).click();
   await expect(page.locator('.product-card')).toHaveCount(6);
-  await page.getByRole('button', { name: 'All things good' }).click();
+  await page.getByRole('button', { name: 'All products' }).click();
   await page.getByRole('textbox', { name: 'Search the collection' }).fill('Everyday Mug');
   await expect(page.locator('.product-card')).toHaveCount(1);
   await page.getByRole('heading', { name: 'The Everyday Mug', exact: true }).click();
+  await expect(page.locator('.product-detail')).toBeVisible();
+  await page.screenshot({ path: `artifacts/product-${testInfo.project.name}.png` });
   await page.getByRole('button', { name: 'Increase The Everyday Mug quantity' }).click();
   await page.getByRole('button', { name: 'Add The Everyday Mug to bag', exact: true }).click();
+  await expect(page.getByText('The Everyday Mug added to bag')).toBeVisible();
   await page.getByRole('link', { name: 'View your bag' }).click();
   await expect(page.locator('.quantity span')).toHaveText('2');
   await page.reload();
   await expect(page.locator('.quantity span')).toHaveText('2');
   await page.getByRole('button', { name: 'Remove The Everyday Mug' }).click();
-  await expect(page.getByRole('heading', { name: 'Room for something good.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your bag is empty' })).toBeVisible();
 });
 
 test('shopping through login, checkout, pending recovery and confirmed payment', async ({
@@ -93,24 +101,24 @@ test('shopping through login, checkout, pending recovery and confirmed payment',
   await page.getByLabel('Email address').fill(delivery.email);
   await page.getByLabel('Password', { exact: true }).fill('a-test-password');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'The finishing touches.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Checkout', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Continue to StarPay' }).click();
   await expect(page.locator('#name-error')).toBeVisible();
   await page.getByLabel('Full name').fill(delivery.name);
   await page.getByLabel('Delivery address').fill(delivery.address);
   await page.getByRole('button', { name: 'Continue to StarPay' }).click();
-  await expect(page.getByRole('heading', { name: 'Your good things are on hold.' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Waiting for payment confirmation' }),
+  ).toBeVisible();
   await expect(
     page.getByText('We can’t verify this payment right now.', { exact: false }),
   ).toBeVisible();
   unavailable = false;
   verified = true;
   await page.getByRole('button', { name: 'Check payment status' }).click();
-  await expect(
-    page.getByRole('heading', { name: 'A few good things, coming your way.' }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Payment confirmed' })).toBeVisible();
   await page.goto('/cart');
-  await expect(page.getByRole('heading', { name: 'Room for something good.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your bag is empty' })).toBeVisible();
 });
 
 test('accessible navigation, mobile layout, and honest service errors', async ({
@@ -119,6 +127,11 @@ test('accessible navigation, mobile layout, and honest service errors', async ({
   await page.goto('/');
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Footer navigation' })
+      .getByRole('link', { name: 'Help', exact: true }),
+  ).toBeVisible();
   if (testInfo.project.name === 'mobile') {
     await page.getByRole('button', { name: 'Open menu' }).click();
     await expect(page.getByRole('navigation', { name: 'Mobile navigation' })).toBeVisible();
@@ -128,8 +141,10 @@ test('accessible navigation, mobile layout, and honest service errors', async ({
     true,
   );
   await page.getByRole('link', { name: 'Skip to content' }).blur();
-  await page.locator('.story-banner').scrollIntoViewIfNeeded();
-  await page.locator('.story-visual img').evaluate((img: HTMLImageElement) => img.decode());
+  for (const img of await page.locator('main img').all()) {
+    await img.scrollIntoViewIfNeeded();
+    await img.evaluate((element: HTMLImageElement) => element.decode());
+  }
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   await page.screenshot({ path: `artifacts/home-${testInfo.project.name}.png`, fullPage: true });
   await page.goto('/auth/login');
@@ -138,5 +153,51 @@ test('accessible navigation, mobile layout, and honest service errors', async ({
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.locator('.notice-error')).toContainText('being set up');
   await page.goto('/products?q=nonexistent-product');
-  await expect(page.getByRole('heading', { name: 'Nothing here just yet.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'No products found' })).toBeVisible();
+});
+
+test('order filters and account dropdown actions stay separate', async ({ page }, testInfo) => {
+  const orders = [
+    {
+      id: '00000000-0000-4000-8000-000000000011',
+      status: 'paid',
+      total_minor: 85000,
+      created_at: '2026-09-17T08:00:00Z',
+      order_items: [{ name: 'The Everyday Mug', quantity: 1 }],
+    },
+    {
+      id: '00000000-0000-4000-8000-000000000012',
+      status: 'pending',
+      total_minor: 65000,
+      created_at: '2026-09-17T09:00:00Z',
+      order_items: [{ name: 'Daily Notes', quantity: 1 }],
+    },
+  ];
+  await page.route('**/api/auth/session', (route) =>
+    route.fulfill({
+      json: { user: { id: 'user-1', email: 'test@example.com' }, configured: true },
+    }),
+  );
+  await page.route('**/api/orders', (route) => route.fulfill({ json: { orders } }));
+  await page.route('**/api/auth/logout', (route) => route.fulfill({ json: { ok: true } }));
+  await page.goto('/orders');
+  await expect(page.locator('.order-card')).toHaveCount(2);
+  await page.getByRole('button', { name: 'Paid', exact: true }).click();
+  await expect(page.locator('.order-card')).toHaveCount(1);
+  await expect(page.locator('.order-card')).toHaveAttribute(
+    'href',
+    '/orders/00000000-0000-4000-8000-000000000011',
+  );
+  await page.getByRole('button', { name: 'All', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Search orders' }).fill('Daily Notes');
+  await expect(page.locator('.order-card')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Account menu for test@example.com' }).click();
+  await expect(page.locator('.account-dropdown-email')).toHaveText('test@example.com');
+  await expect(page.getByRole('button', { name: 'Account menu for test@example.com' })).toHaveText(
+    'TE',
+  );
+  await page.screenshot({ path: `artifacts/account-menu-${testInfo.project.name}.png` });
+  await expect(page.locator('.account-dropdown')).not.toContainText('Your orders');
+  await page.getByRole('button', { name: 'Sign out' }).click();
+  await expect(page).toHaveURL(/\/$/);
 });

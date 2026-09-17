@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ArrowRight, Check, Clock3, RefreshCw, LogOut, CircleX } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, ArrowRight, Check, Clock3, RefreshCw, CircleX, Search } from 'lucide-react';
 import { useSession } from '@/features/auth/use-session';
 import { useCart } from '@/features/cart/store';
 import { api, errorMessage } from '@/lib/http';
@@ -15,16 +15,16 @@ function useOrderAuth(path: string) {
   const session = useSession();
   const router = useRouter();
   useEffect(() => {
-    if (session.data && !session.data.user)
+    if (session.data && !session.data.user && !session.isFetching)
       router.replace(`/auth/login?next=${encodeURIComponent(path)}`);
-  }, [session.data, router, path]);
+  }, [session.data, session.isFetching, router, path]);
   return session;
 }
 export function OrdersPage() {
   const session = useOrderAuth('/orders');
-  const queryClient = useQueryClient();
-  const router = useRouter();
-  const [error, setError] = useState('');
+  const [status, setStatus] = useState<'all' | Order['status']>('all');
+  const [search, setSearch] = useState('');
+  const searchTerm = search.trim().toLowerCase();
   const query = useQuery({
     queryKey: ['orders', session.data?.user?.id],
     enabled: !!session.data?.user,
@@ -34,7 +34,7 @@ export function OrdersPage() {
   if (query.isPending)
     return (
       <div className="loading-state">
-        <Spinner /> Finding your good things…
+        <Spinner /> Loading your orders…
       </div>
     );
   if (query.isError)
@@ -43,59 +43,101 @@ export function OrdersPage() {
         {errorMessage(query.error)} <button onClick={() => query.refetch()}>Try again</button>
       </Notice>
     );
+  const orders = query.data.filter(
+    (order) =>
+      (status === 'all' || order.status === status) &&
+      (!searchTerm ||
+        `${order.id} ${order.order_items.map((item) => item.name).join(' ')}`
+          .toLowerCase()
+          .includes(searchTerm)),
+  );
   return (
     <>
-      <div className="section-heading">
-        <div className="page-heading compact">
-          <span className="eyebrow">MAKE YOURSELF AT HOME</span>
-          <h1>Your orders.</h1>
-          <p>{session.data?.user?.email}</p>
-        </div>
-        <button
-          className="text-link"
-          onClick={async () => {
-            try {
-              await api.post('/auth/logout');
-              queryClient.clear();
-              router.push('/');
-              router.refresh();
-            } catch (e) {
-              setError(errorMessage(e));
-            }
-          }}
-        >
-          Sign out <LogOut size={16} />
-        </button>
+      <div className="page-heading compact">
+        <span className="eyebrow">ORDER HISTORY</span>
+        <h1>Your orders</h1>
+        <p>Review purchases and check their payment status.</p>
       </div>
-      {error && <Notice error>{error}</Notice>}
       {!query.data.length ? (
-        <EmptyState
-          title="Your story starts here."
-          description="Your orders will appear here once you find something you love."
-        />
+        <EmptyState title="No orders yet" description="Products you check out will appear here." />
       ) : (
-        <div className="orders-list">
-          {query.data.map((order) => (
-            <Link className="order-card" href={`/orders/${order.id}`} key={order.id}>
-              <div>
-                <span className="eyebrow">ORDER {order.id.slice(0, 8)}</span>
-                <h2>
-                  {new Date(order.created_at).toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </h2>
-                <span className="muted">
-                  {order.order_items.reduce((s, i) => s + i.quantity, 0)} items
-                </span>
-              </div>
-              <span className={`status-badge status-${order.status}`}>{order.status}</span>
-              <strong>{money(order.total_minor)}</strong>
-              <ArrowRight size={20} />
-            </Link>
-          ))}
-        </div>
+        <>
+          <div className="orders-toolbar">
+            <div className="orders-filters" role="group" aria-label="Filter orders by status">
+              {(
+                [
+                  ['all', 'All'],
+                  ['paid', 'Paid'],
+                  ['pending', 'Pending'],
+                  ['failed', 'Failed'],
+                  ['expired', 'Expired'],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  className={status === value ? 'selected' : ''}
+                  aria-pressed={status === value}
+                  onClick={() => setStatus(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <label className="orders-search">
+              <Search size={17} />
+              <input
+                aria-label="Search orders"
+                placeholder="Order ID or product"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+            </label>
+          </div>
+          <p className="result-count" aria-live="polite">
+            {orders.length} {orders.length === 1 ? 'order' : 'orders'}
+          </p>
+          {orders.length ? (
+            <div className="orders-list">
+              {orders.map((order) => (
+                <Link className="order-card" href={`/orders/${order.id}`} key={order.id}>
+                  <div>
+                    <span className="eyebrow">ORDER #{order.id.slice(0, 8).toUpperCase()}</span>
+                    <h2>
+                      {new Date(order.created_at).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </h2>
+                    <span className="muted">
+                      {order.order_items.reduce((s, i) => s + i.quantity, 0)}{' '}
+                      {order.order_items.reduce((s, i) => s + i.quantity, 0) === 1
+                        ? 'item'
+                        : 'items'}
+                    </span>
+                  </div>
+                  <span className={`status-badge status-${order.status}`}>{order.status}</span>
+                  <strong>{money(order.total_minor)}</strong>
+                  <ArrowRight size={20} />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="orders-empty">
+              <h2>No matching orders</h2>
+              <p>Try another status or search term.</p>
+              <button
+                className="text-link"
+                onClick={() => {
+                  setStatus('all');
+                  setSearch('');
+                }}
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
+        </>
       )}
     </>
   );
@@ -156,14 +198,14 @@ export function OrderPage({ id }: { id: string }) {
         <span className="eyebrow">ORDER {order.id.slice(0, 8)}</span>
         <h1>
           {paid
-            ? 'A few good things, coming your way.'
+            ? 'Payment confirmed'
             : pending
-              ? 'Your good things are on hold.'
-              : 'Let’s take a little pause.'}
+              ? 'Waiting for payment confirmation'
+              : 'Payment not completed'}
         </h1>
         <p>
           {paid
-            ? 'Payment confirmed. Your order is saved below. Thank you for shopping with Merc.'
+            ? 'Your sandbox payment was verified. Your order details are saved below.'
             : pending
               ? 'We’re waiting for payment confirmation. You can come back to this page any time.'
               : `Your payment ${order.status === 'expired' ? 'session expired' : 'was not completed'}. Your bag has been kept for you.`}
@@ -186,7 +228,7 @@ export function OrderPage({ id }: { id: string }) {
       </div>
       <div className="order-detail-grid">
         <section className="order-panel">
-          <h2>Your good finds</h2>
+          <h2>Order items</h2>
           {order.order_items.map((i) => (
             <div className="checkout-line" key={i.product_id}>
               <div className="checkout-thumb">
@@ -199,10 +241,6 @@ export function OrderPage({ id }: { id: string }) {
               <span>{money(i.unit_price_minor * i.quantity)}</span>
             </div>
           ))}
-          <div className="summary-row">
-            <span>Delivery</span>
-            <span>Free</span>
-          </div>
           <div className="summary-row summary-total">
             <span>Total</span>
             <strong>{money(order.total_minor)}</strong>
@@ -210,7 +248,7 @@ export function OrderPage({ id }: { id: string }) {
         </section>
         <section className="order-panel">
           <span className={`status-badge status-${order.status}`}>{order.status}</span>
-          <h2>Delivery details</h2>
+          <h2>Checkout details</h2>
           <p>
             {order.delivery.name}
             <br />
@@ -224,7 +262,6 @@ export function OrderPage({ id }: { id: string }) {
             {order.delivery.phone}
           </p>
           {order.delivery.instructions && <p>{order.delivery.instructions}</p>}
-          <p className="muted">Sandbox demonstration. No physical delivery.</p>
           <Link className="text-link" href="/products">
             Keep exploring <ArrowRight size={16} />
           </Link>

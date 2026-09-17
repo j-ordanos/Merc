@@ -1,8 +1,8 @@
 # Merc
 
-A considered lifestyle storefront built with Next.js App Router, TypeScript, Tailwind CSS, Zustand, TanStack Query, Axios, Formik, Yup, Supabase, and StarPay.
+A mini e-commerce storefront built with Next.js App Router, TypeScript, Tailwind CSS, Zustand, TanStack Query, Axios, Formik, Yup, Supabase, and StarPay.
 
-Public browsing, searchable categories, sorting, product details, a persistent shopping bag, email authentication, checkout, and private order history are implemented. Payments use StarPay's hosted sandbox checkout and server-side verification.
+Public browsing, searchable categories, sorting, product details, a persistent shopping bag, email authentication, an account menu, filtered private order history, checkout, and practical help pages are implemented. Payments use StarPay's hosted sandbox checkout and server-side verification.
 
 ## Run locally
 
@@ -28,7 +28,7 @@ The source challenge document and all `.env` files except `.env.example` are ign
 6. In Authentication → URL Configuration, set Site URL to your app URL and allow `http://localhost:3000/auth/callback` and `https://YOUR-DEPLOYMENT/auth/callback` as redirect URLs. Add preview domains only if needed.
 7. Enable email/password authentication and email confirmation. Configure SMTP for reliable external delivery; Supabase's default email service may restrict recipients or throttle requests.
 
-The seed uses curated Unsplash sample photographs as illustrative product imagery. Real merchandising should replace these with accurate, licensed product photographs and specifications. Storage upload errors stop the seed instead of silently saving broken URLs.
+The seed uses Unsplash sample photographs for product imagery. Real merchandising should replace these with accurate, licensed product photographs and specifications. Storage upload errors stop the seed instead of silently saving broken URLs.
 
 If your network prevents Node from downloading the photos, cache them as `<product-slug>.jpg` in a directory and run `SEED_IMAGE_DIR=/path/to/images npm run db:seed`. The same script still uploads every image into Supabase Storage and saves its public URL.
 
@@ -92,7 +92,7 @@ Supabase authentication does not create the store tables. `DEMO_CATALOG=true` ma
 | `POST /api/checkout`                  | Authenticated `{ items: [{ productId, quantity }], delivery, idempotencyKey }` → `{ orderId, paymentUrl }` |
 | `GET /api/orders`                     | Current customer's orders                                                                                  |
 | `GET /api/orders/:id`                 | Current customer's order with item snapshots                                                               |
-| `POST /api/orders/:id/verify`         | Reconciled order and `verification: verified                                                               | unavailable` |
+| `POST /api/orders/:id/verify`         | Reconciled order and a verification result of `verified` or `unavailable`                                  |
 | `POST /api/payments/starpay/callback` | Signed callback; verified independently before updating an order                                           |
 
 Errors use `{ error: { code, message, fields?, orderId? } }` and an appropriate HTTP status. Delivery contains `name`, `email`, `phone`, `city`, `address`, and `instructions`. Quantities are integers from 1 to 10, with at most 50 distinct products. Local cart values are untrusted and revalidated.
@@ -138,7 +138,7 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/google-chrome npm run test:e2e
 
 Unit tests cover pricing, validation, redirect safety, cart settlement, callback signatures, and verification matching. Service tests cover duplicate claims, timeouts, ownership, and paid-state preservation. Database tests execute the migration in embedded Postgres (PGlite) with minimal Supabase auth/storage scaffolding to check real SQL/RLS behavior. They do not replace testing the migration against hosted Supabase.
 
-Playwright exercises catalog discovery, cart persistence, authentication handoff, checkout validation, pending/retry/paid states, and desktop/mobile navigation. External authentication and payment responses are intercepted in these browser contract tests; they **do not prove a real StarPay transaction**. The real deployment acceptance check below is separate. CI runs lint, types, tests, build, and browser tests.
+Playwright exercises catalog discovery, cart persistence, authentication handoff, checkout validation, pending/retry/paid states, account sign-out, order filters, and desktop/mobile navigation. External authentication and payment responses are intercepted in these browser contract tests; they **do not prove a real StarPay transaction**. The real deployment acceptance check below is separate. CI runs lint, types, tests, build, and browser tests.
 
 ## GitHub and Vercel deployment
 
@@ -152,6 +152,6 @@ No hosted Supabase project, Vercel deployment, or real sandbox transaction shoul
 
 ## Assumptions and tradeoffs
 
-English UI, ETB prices, tax included, free illustrative Addis Ababa delivery, and no physical fulfillment. The catalog uses availability flags rather than inventory reservations. Product administration happens in Supabase. Guest browsing and carts are supported; checkout requires login. Carts are local to a browser and are not synchronized across devices or users sharing that browser. No variants, coupons, refunds, shipping integration, or fulfillment management.
+English UI, ETB prices, tax included, and delivery shown as “On us” at checkout. The checkout page discloses its sandbox payment status; `/help` gives payment and account guidance. The catalog uses availability flags rather than inventory reservations. Product administration happens in Supabase. Guest browsing and carts are supported; checkout requires login. Carts are local to a browser and are not synchronized across devices or users sharing that browser. No variants, coupons, refunds, shipping integration, or fulfillment management.
 
 This small catalog is fetched as a list; a larger catalog should add indexed server-side search and pagination. Payment reconciliation is callback/page-driven, with manual operator recovery for unknown initialization outcomes; a production store should add a durable reconciliation worker and operational alerting. These are documented limits, not simulated capabilities.

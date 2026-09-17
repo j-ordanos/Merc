@@ -8,11 +8,9 @@ export default async function Products() {
   return (
     <div className="container page-section">
       <div className="page-heading">
-        <span className="eyebrow">THE MERC COLLECTION</span>
-        <h1>
-          Good things, <em>all in one place.</em>
-        </h1>
-        <p>Considered pieces. Everyday purpose. Find a little something that feels like you.</p>
+        <span className="eyebrow">THE COLLECTION</span>
+        <h1>Shop all products</h1>
+        <p>Browse home goods, accessories and everyday essentials.</p>
       </div>
       <Suspense fallback={<p>Opening the collection…</p>}>
         <Catalog initialProducts={products} />

@@ -10,19 +10,19 @@ import { api, errorMessage } from '@/lib/http';
 import { FormField, Notice, Spinner } from '@/components/ui';
 type Mode = 'login' | 'signup' | 'forgot-password' | 'reset-password';
 const copy = {
-  login: ['Welcome back.', 'A few good things are waiting for you.', 'Sign in'],
+  login: ['Sign in', 'Access your account and order history.', 'Sign in'],
   signup: [
-    'Make yourself at home.',
-    'Create an account for a more considered everyday.',
+    'Create an account',
+    'An account is required for checkout and private order history.',
     'Create account',
   ],
   'forgot-password': [
-    'A fresh start.',
+    'Reset your password',
     'We’ll send you a link to reset your password.',
     'Send reset link',
   ],
   'reset-password': [
-    'Something new.',
+    'Choose a new password',
     'Choose a new password for your Merc account.',
     'Save new password',
   ],
@@ -38,17 +38,13 @@ export function AuthForm({ mode }: { mode: Mode }) {
   return (
     <div className="auth-layout">
       <div className="auth-aside">
-        <span className="eyebrow">GOOD TO HAVE YOU HERE</span>
+        <span className="eyebrow">MERC ACCOUNT</span>
         <h2>
-          Your everyday,
+          Your orders,
           <br />
-          <em>a little better.</em>
+          <em>in one place.</em>
         </h2>
-        <p>
-          Thoughtful pieces.
-          <br />A space that feels like you.
-        </p>
-        <span className="auth-flower">✳</span>
+        <p>Save your details and keep track of every checkout.</p>
       </div>
       <div className="auth-content">
         <Link href="/products" className="back-link">
@@ -92,7 +88,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                 else if (mode === 'forgot-password')
                   setSuccess('If an account exists for that email, a reset link is on its way.');
                 else {
-                  await query.invalidateQueries({ queryKey: ['session'] });
+                  await query.invalidateQueries({ queryKey: ['session'], refetchType: 'all' });
                   router.push(mode === 'reset-password' ? '/orders' : next);
                   router.refresh();
                 }
@@ -137,7 +133,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         )}
         {!success && (mode === 'login' || mode === 'signup') && (
           <p className="auth-switch">
-            {mode === 'login' ? 'New around here?' : 'Already at home here?'}{' '}
+            {mode === 'login' ? 'New to Merc?' : 'Already have an account?'}{' '}
             <Link
               href={`/auth/${mode === 'login' ? 'signup' : 'login'}?next=${encodeURIComponent(next)}`}
             >

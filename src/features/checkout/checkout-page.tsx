@@ -23,8 +23,9 @@ export function CheckoutPage() {
   const [pendingOrder, setPendingOrder] = useState('');
   const submitting = useRef(false);
   useEffect(() => {
-    if (session.data && !session.data.user) router.replace('/auth/login?next=/checkout');
-  }, [session.data, router]);
+    if (session.data && !session.data.user && !session.isFetching)
+      router.replace('/auth/login?next=/checkout');
+  }, [session.data, session.isFetching, router]);
   if (session.isError)
     return (
       <Notice error>
@@ -70,9 +71,9 @@ export function CheckoutPage() {
         <ArrowLeft size={15} /> Back to your bag
       </Link>
       <div className="page-heading compact">
-        <span className="eyebrow">ALMOST YOURS</span>
-        <h1>The finishing touches.</h1>
-        <p>A few details, and you’re on your way.</p>
+        <span className="eyebrow">SECURE CHECKOUT</span>
+        <h1>Checkout</h1>
+        <p>Review your order, then complete a test payment with StarPay.</p>
       </div>
       <Formik
         initialValues={initialValues}
@@ -120,7 +121,7 @@ export function CheckoutPage() {
             <div className="checkout-fields">
               <div className="form-section-title">
                 <span>01</span>
-                <h2>Where should it go?</h2>
+                <h2>Contact and delivery details</h2>
               </div>
               <div className="form-grid">
                 <FormField
@@ -152,7 +153,7 @@ export function CheckoutPage() {
               />
               <div className="form-section-title payment-section">
                 <span>02</span>
-                <h2>A secure little handoff.</h2>
+                <h2>Payment</h2>
               </div>
               <div className="payment-option">
                 <span className="radio-dot" />
@@ -162,13 +163,10 @@ export function CheckoutPage() {
                 </div>
                 <LockKeyhole size={22} />
               </div>
-              <Notice>
-                Sandbox checkout · Use 0900000000 on the payment page. This demonstration does not
-                fulfill physical orders.
-              </Notice>
+              <Notice>Sandbox checkout · Use 0900000000 on the payment page.</Notice>
             </div>
             <aside className="order-summary">
-              <h2>Your good finds</h2>
+              <h2>Order summary</h2>
               {lines.map((line) => (
                 <div className="checkout-line" key={line.productId}>
                   {line.product && (
@@ -197,7 +195,7 @@ export function CheckoutPage() {
                 <span>Delivery</span>
                 <span className="green-text">On us</span>
               </div>
-              <p className="tax-note">Tax included. No little surprises.</p>
+              <p className="tax-note">Tax included. No extra checkout charge.</p>
               <div className="summary-row summary-total">
                 <span>Total</span>
                 <span>{money(total)}</span>

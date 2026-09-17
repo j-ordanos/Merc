@@ -2,8 +2,8 @@ import { EmptyState } from '@/components/ui';
 export default function NotFound() {
   return (
     <EmptyState
-      title="A little off the beaten path."
-      description="We couldn’t find that page. There are still plenty of good things to discover."
+      title="Page not found"
+      description="This page may have moved. Browse the collection to keep shopping."
     />
   );
 }

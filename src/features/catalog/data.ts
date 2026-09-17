@@ -1,8 +1,8 @@
 import type { Category, Product } from '@/lib/types';
 export const categories: { id: Category; name: string; description: string }[] = [
-  { id: 'home', name: 'Home & living', description: 'Make room for the little things.' },
-  { id: 'accessories', name: 'Accessories', description: 'Good company, wherever you go.' },
-  { id: 'essentials', name: 'Everyday essentials', description: 'A little better, every day.' },
+  { id: 'home', name: 'Home & living', description: 'Furniture accents and home goods.' },
+  { id: 'accessories', name: 'Accessories', description: 'Bags and personal accessories.' },
+  { id: 'essentials', name: 'Everyday essentials', description: 'Stationery and practical goods.' },
 ];
 const photo = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1000&q=85`;
 const items: [string, string, Category, number, string, string, string[]][] = [
@@ -12,7 +12,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'home',
     850,
     'photo-1514228742587-6b1558fcca3d',
-    'A slow morning, a warm cup. Our softly glazed ceramic mug makes an everyday ritual feel a little more considered.',
+    'A 350 ml glazed stoneware mug with a rounded handle. Suitable for the dishwasher and microwave.',
     ['Glazed stoneware · 350 ml', 'Comfortable rounded handle', 'Dishwasher and microwave safe'],
   ],
   [
@@ -21,7 +21,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'accessories',
     3250,
     'photo-1553062407-98eeb64c6a62',
-    'Pack light, go far. A dependable canvas bag for a change of scenery and everything in between.',
+    'A cotton canvas travel bag with a roomy main compartment and adjustable shoulder straps.',
     ['Durable cotton canvas', 'Roomy main compartment', 'Adjustable shoulder straps'],
   ],
   [
@@ -30,7 +30,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'home',
     1650,
     'photo-1584100936595-c0654b55a2e2',
-    'An easy layer of texture for your favorite corner. Soft natural fabric with a relaxed, lived-in feel.',
+    'A 45 × 45 cm cushion in a natural linen blend, with a removable cover for easy washing.',
     ['Natural linen blend', '45 × 45 cm', 'Removable cover; gentle wash'],
   ],
   [
@@ -39,7 +39,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'essentials',
     650,
     'photo-1531346878377-a5be20888e57',
-    'For passing thoughts and bigger ideas. A beautifully simple notebook with plenty of room to begin.',
+    'An A5 notebook with 192 lined pages and a lay-flat binding for comfortable writing.',
     ['192 lined pages', 'A5 format', 'Lay-flat binding'],
   ],
   [
@@ -48,7 +48,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'home',
     2100,
     'photo-1578500494198-246f612d3b3d',
-    'A sculptural home for a few stems, or a quiet statement all on its own.',
+    'A 22 cm matte ceramic vase for a few stems or a small arrangement.',
     ['Matte ceramic finish', 'Height: 22 cm', 'Wipe clean with a soft cloth'],
   ],
   [
@@ -57,7 +57,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'home',
     1250,
     'photo-1603006905003-be475563bc59',
-    'Take a breath. Warm woody notes bring a little of the weekend into any day.',
+    'A 200 g soy wax blend candle with warm woody notes and an approximate 35-hour burn time.',
     ['Soy wax blend · 200 g', 'Cotton wick', 'Approx. 35-hour burn time'],
   ],
   [
@@ -66,7 +66,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'home',
     2850,
     'photo-1600369672770-985fd30004eb',
-    'Something soft to reach for. An understated throw for cooler evenings and unhurried mornings.',
+    'A 100% cotton throw measuring 130 × 170 cm. Machine wash cold.',
     ['100% cotton', '130 × 170 cm', 'Machine wash cold'],
   ],
   [
@@ -75,7 +75,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'home',
     1850,
     'photo-1556911220-bff31c812dba',
-    'From the first slice to the last conversation, a naturally beautiful place to share something good.',
+    'A solid acacia wood serving board measuring 30 × 20 cm. Hand wash and dry after use.',
     ['Solid acacia wood', '30 × 20 cm', 'Hand wash and dry promptly'],
   ],
   [
@@ -84,7 +84,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'accessories',
     950,
     'photo-1544816155-12df9643f363',
-    'Room for your daily essentials and the unexpected little finds along the way.',
+    'A washable heavyweight cotton tote with an internal slip pocket.',
     ['Heavyweight cotton canvas', 'Internal slip pocket', 'Reusable and washable'],
   ],
   [
@@ -93,7 +93,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'accessories',
     1950,
     'photo-1511499767150-a48a237f0083',
-    'A timeless shape for bright days. Lightweight frames that go with just about everything.',
+    'Lightweight acetate sunglasses with UV400 lenses and a protective pouch.',
     ['UV400 lenses', 'Lightweight acetate frame', 'Protective pouch included'],
   ],
   [
@@ -102,7 +102,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'accessories',
     4500,
     'photo-1524805444758-089113d48a6d',
-    'Keep a little perspective on the passing hours with a simple, beautifully balanced dial.',
+    'A 38 mm quartz watch with an adjustable strap and a clean dial.',
     ['Quartz movement', 'Adjustable strap', '38 mm case'],
   ],
   [
@@ -111,7 +111,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'accessories',
     1850,
     'photo-1627123424574-724758594e93',
-    'Only what you need, always close at hand. A slim wallet that gets better with time.',
+    'A slim folded leather wallet with six card slots.',
     ['Genuine leather', 'Six card slots', 'Slim folded profile'],
   ],
   [
@@ -120,7 +120,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'accessories',
     1450,
     'photo-1588850561407-ed78c282e89b',
-    'Made for taking the scenic route. A relaxed hat for afternoon walks and days outdoors.',
+    'A woven sun hat with an adjustable internal band. Spot clean only.',
     ['Woven natural fibers', 'Adjustable internal band', 'Spot clean only'],
   ],
   [
@@ -129,7 +129,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'essentials',
     1450,
     'photo-1602143407151-7111542de6e8',
-    'A daily reminder to pause and recharge. Your favorite drink, ready when you are.',
+    'A 500 ml stainless steel bottle with double-wall insulation and a leak-resistant lid.',
     ['Stainless steel · 500 ml', 'Double-wall insulation', 'Leak-resistant screw lid'],
   ],
   [
@@ -138,7 +138,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'essentials',
     3250,
     'photo-1507473885765-e6ed057f782c',
-    'A pool of warm light for the pages, projects, and quiet hours that matter.',
+    'An adjustable desk lamp with a warm LED bulb included.',
     ['Adjustable shade', 'Warm LED bulb included', 'Standard mains plug'],
   ],
   [
@@ -147,7 +147,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'essentials',
     1150,
     'photo-1485955900006-10f4d324d411',
-    'Give a little green a place to grow. A simple ceramic planter for your desk or windowsill.',
+    'A glazed ceramic planter measuring 12 cm across. Plant not included.',
     ['Glazed ceramic', '12 cm diameter', 'Plant not included'],
   ],
   [
@@ -156,7 +156,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'essentials',
     2450,
     'photo-1495474472287-4d71bcdd2085',
-    'Good things take a moment. A thoughtful coffee companion for a slower start to the day.',
+    'A pour-over set with a 600 ml glass server and reusable filter.',
     ['Glass coffee server', 'Reusable filter', '600 ml capacity'],
   ],
   [
@@ -165,7 +165,7 @@ const items: [string, string, Category, number, string, string, string[]][] = [
     'essentials',
     750,
     'photo-1455390582262-044cdead277a',
-    'A place for the things you notice. Take it on a journey, or just around the corner.',
+    'A pocket-size journal with 160 blank pages and a durable soft cover.',
     ['160 blank pages', 'Pocket-friendly format', 'Durable soft cover'],
   ],
 ];

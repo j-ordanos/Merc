@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, LockKeyhole, Trash2, Truck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, LockKeyhole, Trash2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useCart } from './store';
 import { api, errorMessage } from '@/lib/http';
@@ -32,8 +32,8 @@ export function CartPage() {
   if (!cart.items.length)
     return (
       <EmptyState
-        title="Room for something good."
-        description="Your bag is empty. Let’s find a few things you’ll love."
+        title="Your bag is empty"
+        description="Browse the collection and add a product to get started."
       />
     );
   const lines = cart.items.map((item) => ({
@@ -48,7 +48,7 @@ export function CartPage() {
   return (
     <>
       <div className="page-heading compact">
-        <span className="eyebrow">YOUR GOOD FINDS</span>
+        <span className="eyebrow">SHOPPING BAG</span>
         <h1>
           The shopping bag
           <span className="heading-count">({cart.items.reduce((s, i) => s + i.quantity, 0)})</span>
@@ -108,17 +108,13 @@ export function CartPage() {
           </Link>
         </div>
         <aside className="order-summary">
-          <span className="eyebrow">A FEW GOOD THINGS</span>
+          <span className="eyebrow">YOUR TOTAL</span>
           <h2>Order summary</h2>
           <div className="summary-row">
             <span>Subtotal</span>
             <span>{money(total)}</span>
           </div>
-          <div className="summary-row">
-            <span>Delivery</span>
-            <span className="green-text">On us</span>
-          </div>
-          <p className="tax-note">Tax included. No little surprises.</p>
+          <p className="tax-note">Tax included.</p>
           <div className="summary-row summary-total">
             <span>Total</span>
             <span>{money(total)}</span>
@@ -133,14 +129,6 @@ export function CartPage() {
           <span className="secure-note">
             <LockKeyhole size={14} /> Secure checkout with StarPay
           </span>
-          <div className="summary-delivery">
-            <Truck size={20} />
-            <span>
-              A little something, on us.
-              <br />
-              <small>Free delivery on every order.</small>
-            </span>
-          </div>
         </aside>
       </div>
     </>
