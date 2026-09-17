@@ -31,11 +31,23 @@ const initializationSchema = yup.object({
 const verificationSchema = yup.object({
   order_id: yup.string().required(),
   billRefNo: yup.string().optional(),
-  metadata: yup.object({ order_reference: yup.string().optional() }).optional(),
+  metadata: yup.object({ order_reference: yup.string().optional() }).nullable().optional(),
+  meta_data: yup.object({ order_reference: yup.string().optional() }).nullable().optional(),
   status: yup.string().required(),
-  amount: yup.number().required(),
+  amount: yup.mixed().required(),
   currency: yup.string().required(),
 });
+function providerAmount(value: unknown) {
+  const amount =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string' && /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(value)
+        ? Number(value)
+        : NaN;
+  if (!Number.isFinite(amount) || amount <= 0 || !Number.isSafeInteger(Math.round(amount * 100)))
+    throw new Error('Invalid provider amount');
+  return amount;
+}
 export async function initializePayment(order: Order) {
   if (order.delivery.phone !== '0900000000')
     throw new AppError(400, 'INVALID_SANDBOX_PHONE', 'Use the sandbox test number 0900000000.');
@@ -81,5 +93,13 @@ export async function initializePayment(order: Order) {
 export async function verifyPayment(providerId: string) {
   const { data } = await client().post('/trdp/verify', { orderId: providerId });
   if (data.status !== 'success') throw new Error('Unexpected provider response');
-  return verificationSchema.validate(data.data, { strict: true });
+  const result = await verificationSchema.validate(data.data, { strict: true });
+  return {
+    order_id: result.order_id,
+    billRefNo: result.billRefNo,
+    metadata: result.meta_data ?? result.metadata ?? undefined,
+    status: result.status,
+    amount: providerAmount(result.amount),
+    currency: result.currency,
+  };
 }

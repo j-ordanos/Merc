@@ -183,7 +183,18 @@ export async function reconcile(order: Order) {
       .single();
     if (readError) throw readError;
     return { order: refreshed as Order, verification: 'verified' as const };
-  } catch {
+  } catch (error) {
+    const providerCode = axios.isAxiosError(error) ? error.response?.data?.error?.code : undefined;
+    console.error('Merc payment verification failed', {
+      orderId: order.id,
+      type: error instanceof Error ? error.name : 'UnknownError',
+      ...(axios.isAxiosError(error)
+        ? { httpStatus: error.response?.status, transportCode: error.code }
+        : {}),
+      ...(typeof providerCode === 'string' && /^[A-Z0-9_]{1,40}$/.test(providerCode)
+        ? { providerCode }
+        : {}),
+    });
     return { order, verification: 'unavailable' as const };
   }
 }

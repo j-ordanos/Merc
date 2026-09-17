@@ -4,7 +4,7 @@ import type { Order } from '@/lib/types';
 const post = vi.hoisted(() => vi.fn());
 vi.mock('axios', () => ({ default: { create: () => ({ post }) } }));
 
-import { initializePayment } from '@/server/starpay';
+import { initializePayment, verifyPayment } from '@/server/starpay';
 
 const order: Order = {
   id: '00000000-0000-4000-8000-000000000099',
@@ -72,5 +72,39 @@ describe('StarPay initialization request', () => {
       initializePayment({ ...order, delivery: { ...order.delivery, phone: '0912345678' } }),
     ).rejects.toMatchObject({ code: 'INVALID_SANDBOX_PHONE' });
     expect(post).not.toHaveBeenCalled();
+  });
+});
+
+describe('StarPay verification response', () => {
+  it('accepts the observed paid response with an amount string', async () => {
+    post.mockResolvedValueOnce({
+      data: {
+        status: 'success',
+        data: {
+          order_id: 'T2G60BI8Q25',
+          status: 'PAID',
+          amount: '750',
+          currency: 'ETB',
+          meta_data: null,
+        },
+      },
+    });
+    await expect(verifyPayment('T2G60BI8Q25')).resolves.toMatchObject({
+      order_id: 'T2G60BI8Q25',
+      status: 'PAID',
+      amount: 750,
+      currency: 'ETB',
+    });
+    expect(post).toHaveBeenCalledWith('/trdp/verify', { orderId: 'T2G60BI8Q25' });
+  });
+
+  it('rejects malformed provider amount strings', async () => {
+    post.mockResolvedValueOnce({
+      data: {
+        status: 'success',
+        data: { order_id: 'provider-order', status: 'PAID', amount: '750 ETB', currency: 'ETB' },
+      },
+    });
+    await expect(verifyPayment('provider-order')).rejects.toThrow('Invalid provider amount');
   });
 });

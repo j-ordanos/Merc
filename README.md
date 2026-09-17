@@ -113,6 +113,8 @@ Errors use `{ error: { code, message, fields?, orderId? } }` and an appropriate 
 
 Payment verification failures preserve the current order status and show a retry message. Callbacks return 503 when verification or attempt lookup is temporarily unavailable. Signed callback verification requires the separate webhook secret; without it, browser-initiated verification can still check known provider IDs, but webhook verification cannot pass.
 
+StarPay's sandbox verification response can send `amount` as a decimal string, even though its API reference models a number. The adapter validates and converts that value before comparing it with the stored order total. Provider errors are logged by category without response bodies or customer data.
+
 Use **0900000000 only** in the checkout form. The server sends its equivalent E.164 form, `+251900000000`, to StarPay because the transaction API rejects the local format with `GEN_019`. Both the input schema and server adapter restrict this implementation to sandbox behavior. No production payments or real customer phone numbers are supported.
 
 Official references: [create transaction](https://developer.starpayethiopia.com/api/endpoint/transaction), [verify payment](https://developer.starpayethiopia.com/api/endpoint/verification), [callback signatures](https://developer.starpayethiopia.com/api/sign), [test number](https://developer.starpayethiopia.com/api/test-numbers). Merchant gateway activation and domain/network approval are external prerequisites; putting calls on the server does not itself grant access.
