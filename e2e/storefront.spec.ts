@@ -1,5 +1,37 @@
 import { test, expect } from '@playwright/test';
 import { sampleProducts } from '../src/features/catalog/data';
+test('category tiles, seasonal picks, and styled sorting lead to real catalog views', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/');
+  await expect(page.locator('.home-hero-tile')).toHaveCount(3);
+  await page.locator('.home-hero-tile').filter({ hasText: 'Accessories' }).click();
+  await expect(page).toHaveURL(/category=accessories/);
+  await expect(page.locator('.product-card')).toHaveCount(6);
+  await page.goto('/');
+  await page.getByRole('link', { name: /New season picks/ }).click();
+  await expect(page).toHaveURL(/collection=new-season/);
+  await expect(page.locator('.product-card')).toHaveCount(5);
+  await page.getByRole('button', { name: 'Sort products' }).click();
+  await page.getByRole('option', { name: 'Price: low to high' }).click();
+  await expect(page.locator('.product-card').first()).toContainText('Daily Notes');
+  await page.getByRole('button', { name: 'View all products' }).click();
+  await expect(page.locator('.product-card')).toHaveCount(18);
+  const nav = page.getByRole('navigation', {
+    name: testInfo.project.name === 'mobile' ? 'Mobile navigation' : 'Main navigation',
+  });
+  if (testInfo.project.name === 'mobile')
+    await page.getByRole('button', { name: 'Open menu' }).click();
+  await expect(nav.getByRole('link', { name: 'Help' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Instagram (demo link)' })).toHaveAttribute(
+    'href',
+    'https://www.instagram.com/',
+  );
+  await expect(page.getByRole('link', { name: 'StarPay payment gateway' })).toHaveAttribute(
+    'href',
+    'https://www.starpayethiopia.com/',
+  );
+});
 test('catalog filters, details, quantity controls, and persisted bag', async ({
   page,
 }, testInfo) => {

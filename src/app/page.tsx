@@ -4,7 +4,6 @@ import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { getProducts } from '@/server/catalog';
 import { ProductGrid } from '@/features/catalog/components';
 import { categories } from '@/features/catalog/data';
-import { money } from '@/lib/money';
 import { publicPageMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -34,7 +33,6 @@ export default async function Home() {
     ...picks,
     ...products.filter((product) => !featured.includes(product) && !picks.includes(product)),
   ].slice(0, 4);
-  const heroProduct = featured[0] || products[0];
 
   return (
     <>
@@ -58,28 +56,26 @@ export default async function Home() {
             {products.length} products across three categories
           </span>
         </div>
-        {heroProduct && (
-          <Link
-            href={`/products/${heroProduct.slug}`}
-            className="home-hero-image"
-            aria-label={`View ${heroProduct.name}`}
-          >
-            <Image
-              src={heroProduct.image_url}
-              alt={heroProduct.image_alt}
-              fill
-              priority
-              sizes="(max-width: 760px) 100vw, 55vw"
-            />
-            <div className="home-hero-image-note">
-              <span>
-                <strong>{heroProduct.name}</strong>
-                <small>{money(heroProduct.price_minor)}</small>
+        <div className="home-hero-tiles" aria-label="Shop by category">
+          {categories.map((category, index) => (
+            <Link
+              href={`/products?category=${category.id}`}
+              className="home-hero-tile"
+              key={category.id}
+            >
+              <Image
+                src={categoryImages[category.id]}
+                alt=""
+                fill
+                priority={index === 0}
+                sizes="(max-width: 760px) 100vw, (max-width: 1100px) 25vw, 30vw"
+              />
+              <span className="home-hero-tile-label">
+                {category.name} <ArrowUpRight size={19} aria-hidden="true" />
               </span>
-              <ArrowUpRight size={20} />
-            </div>
-          </Link>
-        )}
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="section container home-products" aria-labelledby="featured-title">
@@ -95,38 +91,15 @@ export default async function Home() {
         <ProductGrid products={featured} />
       </section>
 
-      <section className="section container home-categories" aria-labelledby="categories-title">
-        <div className="section-heading" data-reveal>
-          <div>
-            <span className="eyebrow">FIND YOUR WAY IN</span>
-            <h2 id="categories-title">Shop by category</h2>
-          </div>
-        </div>
-        <div className="category-grid">
-          {categories.map((category) => (
-            <Link
-              className="category-card"
-              data-reveal
-              key={category.id}
-              href={`/products?category=${category.id}`}
-            >
-              <div className="category-image">
-                <Image
-                  src={categoryImages[category.id]}
-                  alt=""
-                  fill
-                  sizes="(max-width: 600px) 90vw, 33vw"
-                />
-              </div>
-              <div className="category-copy">
-                <h3>{category.name}</h3>
-                <span className="round-arrow">
-                  <ArrowUpRight size={20} />
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
+      <section className="container home-promo-wrap" aria-label="New season picks">
+        <Link className="home-promo" href="/products?collection=new-season">
+          <span className="home-promo-kicker">THE SEASON EDIT</span>
+          <span className="home-promo-title">New season picks</span>
+          <span className="home-promo-copy">A fresh look at home and everyday favorites.</span>
+          <span className="home-promo-action">
+            Shop the edit <ArrowRight size={18} />
+          </span>
+        </Link>
       </section>
 
       <section className="home-service" aria-labelledby="service-title">

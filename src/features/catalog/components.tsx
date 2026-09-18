@@ -10,14 +10,14 @@ import {
   ShieldCheck,
   ArrowLeft,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import type { Product } from '@/lib/types';
 import { money } from '@/lib/money';
 import { api, errorMessage } from '@/lib/http';
 import { useCart } from '@/features/cart/store';
-import { categories } from './data';
+import { categories, newSeasonSlugs } from './data';
 import { EmptyState, Notice, Quantity } from '@/components/ui';
 import { useToast } from '@/components/toast';
 export function AddToBag({
@@ -99,11 +99,97 @@ export function ProductGrid({ products }: { products: Product[] }) {
     </div>
   );
 }
+const sortOptions = [
+  { value: 'featured', label: 'Featured' },
+  { value: 'price-low', label: 'Price: low to high' },
+  { value: 'price-high', label: 'Price: high to low' },
+  { value: 'name', label: 'Name: A–Z' },
+];
+
+function SortMenu({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const options = useRef<(HTMLButtonElement | null)[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    options.current[sortOptions.findIndex((option) => option.value === value)]?.focus();
+    return () => document.removeEventListener('pointerdown', closeOutside);
+  }, [open, value]);
+
+  return (
+    <div className="sort-menu" ref={root}>
+      <span className="sort-menu-label">Sort by</span>
+      <button
+        ref={trigger}
+        type="button"
+        className="sort-menu-trigger"
+        aria-label="Sort products"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls="product-sort-options"
+        onClick={() => setOpen((current) => !current)}
+      >
+        {sortOptions.find((option) => option.value === value)?.label || 'Featured'}
+        <ChevronDown size={16} aria-hidden="true" />
+      </button>
+      {open && (
+        <div
+          id="product-sort-options"
+          className="sort-menu-options"
+          role="listbox"
+          aria-label="Sort products"
+          onKeyDown={(event) => {
+            const index = options.current.findIndex((option) => option === document.activeElement);
+            if (event.key === 'Escape') {
+              setOpen(false);
+              trigger.current?.focus();
+            } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+              event.preventDefault();
+              const step = event.key === 'ArrowDown' ? 1 : -1;
+              options.current[(index + step + sortOptions.length) % sortOptions.length]?.focus();
+            } else if (event.key === 'Home' || event.key === 'End') {
+              event.preventDefault();
+              options.current[event.key === 'Home' ? 0 : sortOptions.length - 1]?.focus();
+            }
+          }}
+        >
+          {sortOptions.map((option, index) => (
+            <button
+              key={option.value}
+              ref={(node) => {
+                options.current[index] = node;
+              }}
+              type="button"
+              role="option"
+              aria-selected={value === option.value}
+              className="sort-menu-option"
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+                trigger.current?.focus();
+              }}
+            >
+              {option.label}
+              {value === option.value && <Check size={16} aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 export function Catalog({ initialProducts }: { initialProducts: Product[] }) {
   const params = useSearchParams();
   const category = params.get('category') || 'all';
   const search = params.get('q') || '';
   const sort = params.get('sort') || 'featured';
+  const collection = params.get('collection');
   const query = useQuery({
     queryKey: ['products'],
     queryFn: async () => (await api.get<{ products: Product[] }>('/products')).data.products,
@@ -119,6 +205,7 @@ export function Catalog({ initialProducts }: { initialProducts: Product[] }) {
     .filter(
       (p) =>
         (category === 'all' || p.category === category) &&
+        (collection !== 'new-season' || newSeasonSlugs.includes(p.slug)) &&
         `${p.name} ${p.description}`.toLowerCase().includes(search.toLowerCase()),
     )
     .sort((a, b) =>
@@ -132,6 +219,14 @@ export function Catalog({ initialProducts }: { initialProducts: Product[] }) {
     );
   return (
     <>
+      {collection === 'new-season' && (
+        <div className="collection-banner">
+          <span>New season picks</span>
+          <button type="button" onClick={() => change('collection', '')}>
+            View all products
+          </button>
+        </div>
+      )}
       <div className="catalog-toolbar" id="categories">
         <div className="category-tabs" aria-label="Product categories">
           {[{ id: 'all', name: 'All products' }, ...categories].map((c) => (
@@ -156,20 +251,7 @@ export function Catalog({ initialProducts }: { initialProducts: Product[] }) {
               onChange={(e) => change('q', e.target.value)}
             />
           </label>
-          <label className="sort-input">
-            <span>Sort by</span>
-            <select
-              aria-label="Sort products"
-              value={sort}
-              onChange={(e) => change('sort', e.target.value)}
-            >
-              <option value="featured">Featured</option>
-              <option value="price-low">Price: low to high</option>
-              <option value="price-high">Price: high to low</option>
-              <option value="name">Name: A–Z</option>
-            </select>
-            <ChevronDown size={15} aria-hidden="true" />
-          </label>
+          <SortMenu value={sort} onChange={(value) => change('sort', value)} />
         </div>
       </div>
       <p className="result-count" aria-live="polite">

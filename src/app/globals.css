@@ -3375,3 +3375,321 @@ h3 {
 .order-status h1 {
   font-size: clamp(36px, 4vw, 52px);
 }
+
+/* Category-led home and seasonal collection. */
+.home-hero-tiles {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-height: 410px;
+}
+.home-hero-tile {
+  position: relative;
+  display: block;
+  min-height: 0;
+  overflow: hidden;
+  background: #c6c7bc;
+  isolation: isolate;
+}
+.home-hero-tile:first-child {
+  grid-row: span 2;
+}
+.home-hero-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 45%, rgb(15 25 19 / 66%));
+  z-index: 0;
+}
+.home-hero-tile img {
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+.home-hero-tile:hover img,
+.home-hero-tile:focus-visible img {
+  transform: scale(1.045);
+}
+.home-hero-tile-label {
+  position: absolute;
+  z-index: 1;
+  inset: auto 17px 16px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  color: #fff;
+  font-size: clamp(16px, 1.5vw, 21px);
+  font-weight: 650;
+  line-height: 1.15;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 40%);
+}
+.home-hero-tile:first-child .home-hero-tile-label {
+  inset: auto 24px 22px;
+  font-size: clamp(20px, 2vw, 28px);
+}
+.home-hero-tile-label svg {
+  flex: none;
+}
+.home-promo-wrap {
+  margin-top: 72px;
+}
+.home-promo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 30px;
+  row-gap: 6px;
+  padding: 32px clamp(25px, 4vw, 58px);
+  background: #e5e7dc;
+  color: #173b2c;
+  border: 1px solid #d2d8ca;
+  transition: background 0.2s ease;
+}
+.home-promo:hover {
+  background: #dbdfd1;
+}
+.home-promo-kicker {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+}
+.home-promo-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(38px, 4vw, 54px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.home-promo-copy {
+  font-size: 15px;
+  line-height: 1.5;
+}
+.home-promo-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.collection-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 17px 20px;
+  background: #e7e9df;
+  color: #173b2c;
+  font-size: 16px;
+  font-weight: 700;
+}
+.collection-banner button {
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: none;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Catalog sort uses the same surface and focus treatment as the other controls. */
+.sort-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding-left: 12px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: #fbfaf7;
+  flex-shrink: 0;
+}
+.sort-menu:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px #294c3b20;
+}
+.sort-menu-label {
+  color: var(--muted);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.sort-menu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  min-width: 164px;
+  min-height: 46px;
+  padding: 0 12px 0 4px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+.sort-menu-trigger:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: -2px;
+}
+.sort-menu-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 220px;
+  padding: 6px;
+  background: #fbfaf7;
+  border: 1px solid var(--line);
+  box-shadow: 0 14px 28px rgb(19 42 29 / 13%);
+}
+.sort-menu-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 39px;
+  padding: 9px 11px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.sort-menu-option:hover,
+.sort-menu-option:focus-visible,
+.sort-menu-option[aria-selected='true'] {
+  background: #e7e9df;
+  outline: none;
+}
+
+.footer-social {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+}
+.footer-social a {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgb(225 238 222 / 45%);
+  border-radius: 50%;
+  color: #e5eee1;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+.footer-social a:hover {
+  background: rgb(225 238 222 / 12%);
+  border-color: #e5eee1;
+}
+.footer-links .footer-legal {
+  font-size: 12px;
+}
+.footer-legal .footer-title,
+.footer-legal a {
+  color: #a9bfad;
+}
+.footer-legal a:hover {
+  color: #e5eee1;
+}
+.footer-starpay {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #bdd2c2;
+}
+.footer-starpay-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 32px;
+  padding: 2px 5px;
+  background: #f8f7ef;
+  border-radius: 2px;
+}
+.footer-starpay-logo img {
+  width: 55px;
+  height: auto;
+}
+.detail-copy summary,
+.faq-list summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  list-style: none;
+}
+.detail-copy summary::-webkit-details-marker,
+.faq-list summary::-webkit-details-marker {
+  display: none;
+}
+.detail-copy summary::after,
+.faq-list summary::after {
+  content: '+';
+  font-family: 'DM Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+}
+.detail-copy details[open] summary::after,
+.faq-list details[open] summary::after {
+  content: '−';
+}
+
+@media (max-width: 760px) {
+  .home-hero-tiles {
+    min-height: 310px;
+  }
+  .home-promo {
+    grid-template-columns: 1fr auto;
+  }
+  .home-promo-copy {
+    grid-column: 1;
+  }
+  .home-promo-action {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+  }
+}
+@media (max-width: 480px) {
+  .home-hero-tiles {
+    min-height: 260px;
+    gap: 6px;
+  }
+  .home-hero-tile-label,
+  .home-hero-tile:first-child .home-hero-tile-label {
+    inset: auto 10px 10px;
+    font-size: 16px;
+  }
+  .home-hero-tile-label svg {
+    width: 16px;
+  }
+  .home-promo-wrap {
+    margin-top: 55px;
+  }
+  .home-promo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 27px 23px;
+  }
+  .home-promo-action {
+    margin-top: 7px;
+  }
+  .sort-menu {
+    justify-content: space-between;
+  }
+  .sort-menu-options {
+    left: 0;
+  }
+}

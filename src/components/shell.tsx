@@ -2,7 +2,17 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowRight, ArrowUpRight, Menu, Search, ShoppingBag, X } from 'lucide-react';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Camera,
+  Menu,
+  Music2,
+  Search,
+  Send,
+  ShoppingBag,
+  X,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Product } from '@/lib/types';
@@ -14,6 +24,7 @@ import { AccountMenu } from '@/components/account-menu';
 const navigation = [
   { label: 'Shop', href: '/products' },
   { label: 'Orders', href: '/orders' },
+  { label: 'Help', href: '/help' },
 ];
 
 const announcement = {
@@ -250,6 +261,35 @@ export function Footer() {
           <Link className="footer-cta" href="/products">
             Browse the collection <ArrowUpRight size={17} />
           </Link>
+          <div className="footer-social" aria-label="Demo social links">
+            <a
+              href="https://www.instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram (demo link)"
+              title="Instagram (demo link)"
+            >
+              <Camera size={18} />
+            </a>
+            <a
+              href="https://www.tiktok.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TikTok (demo link)"
+              title="TikTok (demo link)"
+            >
+              <Music2 size={18} />
+            </a>
+            <a
+              href="https://t.me/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Telegram (demo link)"
+              title="Telegram (demo link)"
+            >
+              <Send size={18} />
+            </a>
+          </div>
         </div>
         <nav className="footer-links" aria-label="Footer navigation">
           <div>
@@ -272,7 +312,7 @@ export function Footer() {
             <Link href="/developer">Developer</Link>
             <Link href="/orders">Your orders</Link>
           </div>
-          <div>
+          <div className="footer-legal">
             <span className="footer-title">Legal</span>
             <Link href="/terms">Terms of use</Link>
             <Link href="/privacy">Privacy</Link>
@@ -285,7 +325,18 @@ export function Footer() {
         <div className="footer-meta">
           <span>Prices in ETB</span>
           <span className="footer-dot" aria-hidden="true" />
-          <span>StarPay sandbox checkout</span>
+          <a
+            className="footer-starpay"
+            href="https://www.starpayethiopia.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="StarPay payment gateway"
+          >
+            <span>Sandbox checkout by</span>
+            <span className="footer-starpay-logo">
+              <Image src="/brands/starpay.png" alt="StarPay" width={76} height={45} />
+            </span>
+          </a>
         </div>
       </div>
     </footer>

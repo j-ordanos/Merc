@@ -4,6 +4,13 @@ export const categories: { id: Category; name: string; description: string }[] =
   { id: 'accessories', name: 'Accessories', description: 'Bags and personal accessories.' },
   { id: 'essentials', name: 'Everyday essentials', description: 'Stationery and practical goods.' },
 ];
+export const newSeasonSlugs = [
+  'linen-cushion',
+  'everyday-tote',
+  'daily-notebook',
+  'steel-water-bottle',
+  'travel-journal',
+];
 const photo = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1000&q=85`;
 const items: [string, string, Category, number, string, string, string[]][] = [
   [
